@@ -7,12 +7,9 @@ url_string = "https://statsapi.web.nhl.com/api/v1/draft/prospects"
 
 connection = DatabaseConnection.mysql_open()
 
-
 url = requests.get(url_string)
 url_data = url.json()
 url_data = url_data['prospects']
-
-i = 0
 
 for prospect in url_data:
     try:
@@ -21,12 +18,14 @@ for prospect in url_data:
         prospectID = 'NULL'
 
     try:
-        firstName = f"\'{prospect['firstName']}\'"
+        firstName = prospect['firstName'].replace('\'', '\"')
+        firstName = f"\'{firstName}\'"
     except KeyError:
         firstName = 'NULL'
 
     try:
-        lastName = f"\'{prospect['lastName']}\'"
+        lastName = prospect['lastName'].replace('\'', '\"')
+        lastName = f"\'{lastName}\'"
     except KeyError:
         lastName = 'NULL'
 
@@ -36,27 +35,27 @@ for prospect in url_data:
         birthDate = 'NULL'
 
     try:
-        birthCity = f"\'{prospect['birthCity']}\'"
+        birthCity = prospect['birthCity'].replace('\'', '\"')
+        birthCity = f"\'{birthCity}\'"
+        if birthCity == "\'\'":
+            birthCity = 'NULL'
     except KeyError:
         birthCity = 'NULL'
 
     try:
-        birthStateProvince = f"\'{prospect['birthStateProvince']}\'"
+        birthStateProvince = prospect['birthStateProvince'].replace('\'', '\"')
+        birthStateProvince = f"\'{birthStateProvince}\'"
     except KeyError:
         birthStateProvince = 'NULL'
 
     try:
-        birthCountry = f"\'{prospect['birthCountry']}\'"
+        birthCountry = prospect['birthCountry'].replace('\'', '\"')
+        birthCountry = f"\'{birthCountry}\'"
     except KeyError:
         birthCountry = 'NULL'
 
     try:
-        nationality = f"\'{prospect['nationality']}\'"
-    except KeyError:
-        nationality = 'NULL'
-
-    try:
-        height = prospect['height'].replace('\"','')
+        height = prospect['height'].replace('\"', '')
         height = f"\"{height}\""
     except KeyError:
         height = 'NULL'
@@ -73,6 +72,8 @@ for prospect in url_data:
 
     try:
         position = f"\'{prospect['primaryPosition']['code']}\'"
+        if position == "\'N/A\'":
+            position = 'NULL'
     except KeyError:
         position = 'NULL'
 
@@ -92,12 +93,14 @@ for prospect in url_data:
         prospectCategoryName = 'NULL'
 
     try:
-        amateurTeam = f"\'{prospect['amateurTeam']['name']}\'"
+        amateurTeam = prospect['amateurTeam']['name'].replace('\'', '\"')
+        amateurTeam = f"\'{amateurTeam}\'"
     except KeyError:
         amateurTeam = 'NULL'
 
     try:
-        amateurLeague = f"\'{prospect['amateurLeague']['name']}\'"
+        amateurLeague = prospect['amateurLeague']['name'].replace('\'', '\"')
+        amateurLeague = f"\'{amateurLeague}\'"
     except KeyError:
         amateurLeague = 'NULL'
 
@@ -109,7 +112,6 @@ for prospect in url_data:
             f"{birthCity}, " \
             f"{birthStateProvince}, " \
             f"{birthCountry}, " \
-            f"{nationality}, " \
             f"{height}, " \
             f"{weight}," \
             f"{shoots}," \
@@ -119,21 +121,12 @@ for prospect in url_data:
             f"{prospectCategoryName}," \
             f"{amateurTeam}," \
             f"{amateurLeague})"
-    print(query)
+
     cursor = connection.cursor()
-    cursor.execute(query)
+    try:
+        cursor.execute(query)
+    except:
+        print("Unable to execute: ", query)
     connection.commit()
-
-
-
-    if i > 10:
-        break
-    i = i + 1
-
-
-
-
-
-
 
 DatabaseConnection.mysql_close(connection)
