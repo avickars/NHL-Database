@@ -15,3 +15,5 @@ os.system('python3 DataGenerators/drafts_generator.py')
 os.system('python3 DataGenerators/seasons_generator.py')
 
 os.system('python3 DataGenerators/schedule_generator.py')
+
+os.system('python3 DataGenerators/live_data_generator.py')

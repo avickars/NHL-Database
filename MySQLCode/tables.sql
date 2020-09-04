@@ -104,27 +104,99 @@ create table schedules(
 );
 
 create table players (
-
-)
-
-create table if not exists players (
-    player_id int not null,
-    first_name varchar(255) not null,
-    last_name varchar(255) not null,
-    number int,
-    birth_date date not null ,
-    birth_city varchar(255),
-    birth_state varchar(255),
-    birth_country varchar(255),
-    height double,
+    playerID int,
+    firstName varchar(255),
+    lastName varchar(255),
+    birthDate date,
+    birthCity varchar(255),
+    birthStateProvince varchar(255),
+    birthCountry varchar(255),
+    height varchar(255),
     weight int,
-    alternate_captain bool,
-    captain bool,
-    rookie bool,
-    shoots_catches char,
-    roster_status char,
-    current_team int,
-    position char,
-    constraint playerPK primary key (player_id)
+    shootsCatches char(1),
+    rosterStatus char(1),
+    primary key (playerID)
 );
+
+create table active (
+    playerID int,
+    active bool,
+    date datetime,
+    primary key (playerID, active, date),
+    foreign key (playerID) references players (playerID)
+);
+
+
+create table rookies (
+    playerID int,
+    rookie bool,
+    date datetime,
+    primary key (playerID, date),
+    foreign key (playerID) references players (playerID)
+);
+
+create table wears_number (
+    playerID int,
+    primaryNumber int,
+    date datetime,
+    primary key (playerID, date),
+    foreign key (playerID) references players (playerID)
+);
+
+create table captain(
+    playerID int,
+    captain bool,
+    date datetime,
+    primary key (playerID, date),
+    foreign key (playerID) references players (playerID)
+);
+
+create table alternate_captain(
+    playerID int,
+    alternateCaptain bool,
+    date datetime,
+    primary key (playerID, date),
+    foreign key (playerID) references players (playerID)
+);
+
+create table plays_for (
+    playerID int,
+    teamID int,
+    date datetime,
+    primary key (playerID,date),
+    foreign key (playerID) references players (playerID),
+    foreign key (teamID) references teams (teamID)
+);
+
+create table position (
+    playerID int,
+    primaryPositionCode varchar(20),
+    primaryPositionName varchar(255),
+    primaryPositionType varchar(255),
+    date datetime,
+    primary key (playerID, date),
+    foreign key (playerID) references players (playerID)
+);
+
+create table live_feed (
+    eventID int,
+    gameID int,
+    event varchar(255),
+    eventCode varchar(255),
+    eventTypeID varchar(255),
+    eventDescription varchar(255),
+    secondaryType varchar(255),
+    periodNum varchar(255),
+    periodTime time,
+    playerOneID int,
+    playerTwoID int,
+    xCoordinate decimal,
+    yCoordinate decimal,
+    primary key (gameID, eventID),
+    foreign key (gameID) references schedules(gameID),
+    foreign key (playerOneID) references players (playerID),
+    foreign key (playerTwoID) references players (playerID)
+);
+
+
 

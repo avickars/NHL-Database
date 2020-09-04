@@ -1,10 +1,8 @@
 import requests
 from MySQLCode import DatabaseConnection
-connection = DatabaseConnection.mysql_open()
 from datetime import datetime
 
-print(datetime.date(datetime.now()))
-
+connection = DatabaseConnection.mysql_open()
 
 cursor = connection.cursor()
 cursor.execute('select seasonID from seasons where regularSeasonStartDate>=\'2000-10-04\';')
@@ -19,7 +17,6 @@ for season in seasons:
             continue
         gameDate = f"\'{date['date']}\'"
         for game in date['games']:
-
             gameID = game['gamePk']
 
             gameType = f"\'{game['gameType']}\'"
@@ -38,8 +35,5 @@ for season in seasons:
             cursor = connection.cursor()
             cursor.execute(query)
             connection.commit()
-
-
-
 
 DatabaseConnection.mysql_close(connection)
