@@ -1,6 +1,8 @@
 import requests
-from SQLCode import DatabaseConnection
-from SQLCode import DatabaseCredentials as DBC
+import SQLCode.DatabaseCredentials as DBC
+import SQLCode.DatabaseConnection as DatabaseConnection
+# from SQLCode import DatabaseConnection
+# from SQLCode import DatabaseCredentials as DBC
 from datetime import date
 
 creds = DBC.DataBaseCredentials()
