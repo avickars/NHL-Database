@@ -1,5 +1,5 @@
 import requests
-from MySQLCode import DatabaseConnection
+from SQLCode import DatabaseConnection
 
 connection = DatabaseConnection.mysql_open()
 

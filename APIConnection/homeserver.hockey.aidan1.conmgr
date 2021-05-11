@@ -1,0 +1,14 @@
+﻿<?xml version="1.0"?>
+<DTS:ConnectionManager xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:ObjectName="homeserver.hockey.aidan1"
+  DTS:DTSID="{0E255ACF-73C6-4E8F-9178-53C6B38D1856}"
+  DTS:CreationName="ADO.NET:System.Data.SqlClient.SqlConnection, System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+  <DTS:ObjectData>
+    <DTS:ConnectionManager
+      DTS:ConnectionString="Data Source=homeserver;User ID=aidan;Initial Catalog=hockey;Persist Security Info=True;Application Name=SSIS-APIConnection-{0E255ACF-73C6-4E8F-9178-53C6B38D1856}homeserver.hockey.aidan1;">
+      <DTS:Password
+        DTS:Name="Password"
+        Sensitive="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA/unP/thYgUuuBLK9F4Wl0QAAAAACAAAAAAAQZgAAAAEAACAAAAAtCeo+3eJnNKQ4i8CFXBu/oJo5VA9V0IvsjBvvo2lbbwAAAAAOgAAAAAIAACAAAACZRiAM7ZlgunMI9t/s6mcNAnioO1GCS2coG2GOmOV2OIAAAAAR9aZurCbrL401HeVL3aysxupx/UjOlL3rDQ5TaCtFLqsy36o/YEIHFFhwucOv3gFZE8jSi4Wvv9des+cog9rJ66SE3uQAoE2iVT+guP60JB4rE0RCt8OvvqMAiorBSvFKVc63UAaT0hJCvVaK0d52kQ8xr5Mh8s2wFOshmu6ar0AAAACxLKySU55qeO4pK31EsnVMUiw+pW91spFTI+YrB7JXPjhsnwkkKw/ksc+AnA1XUkOh+b663eEnJ8aUSz492IG9</DTS:Password>
+    </DTS:ConnectionManager>
+  </DTS:ObjectData>
+</DTS:ConnectionManager>

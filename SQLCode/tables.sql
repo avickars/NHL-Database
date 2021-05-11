@@ -1,6 +1,7 @@
 use hockey;
 
-create table if not exists prospects (
+
+create table prospects (
     prospectID int ,
     firstName varchar(255) not null,
     lastName varchar(255) not null,
@@ -20,27 +21,38 @@ create table if not exists prospects (
     constraint prospectPK primary key (prospectID)
 );
 
-create table if not exists conferences (
+create table prospectCategory (
+	prospectCategoryID int,
+    prospectCategoryName varchar(255),
+	constraint prospectCategoryPK primary key (prospectCategoryID)
+);
+
+
+
+create table conferences (
     conferenceID int,
     conferenceName varchar(255) not null ,
     abbreviation varchar(10) not null ,
     shortName varchar(255) not null ,
-    active bool not null ,
-    primary key (conferenceID)
+    active bit not null ,
+	date date not null,
+    primary key (conferenceID, date)
 );
 
-create table if not exists divisions (
+create table divisions (
     divisionID int,
     divisionName varchar(255) not null ,
     abbreviation varchar(10) not null ,
     nameShort varchar(255),
     conferenceID int null ,
-    active bool not null ,
+    active bit not null ,
     primary key (divisionID),
     foreign key (conferenceID) references conferences (conferenceID)
 );
 
-create table if not exists franchises (
+
+
+create table franchises (
     franchiseID int not null ,
     firstSeasonID int not null ,
     lastSeasonID int,
@@ -50,7 +62,7 @@ create table if not exists franchises (
     constraint franchisesPL primary key (franchiseID)
 );
 
-create table if not exists teams (
+create table teams (
     teamID int not null ,
     venueName varchar(255),
     venueCity varchar(255),
@@ -59,14 +71,13 @@ create table if not exists teams (
     divisionID int,
     officialSiteUrl varchar(255),
     franchiseID int not null ,
-    active bool not null ,
+    active bit not null ,
     constraint teamPK primary key (teamID),
     constraint teamsFKFranchise foreign key (franchiseID) references franchises(franchiseID),
     constraint teamsFKDivision foreign key (divisionID) references divisions(divisionID)
 );
-
-create table if not exists draftsPicks (
-    draftYear year not null ,
+create table draftsPicks (
+    draftYear smallint not null ,
     round int not null ,
     pickOverall int not null ,
     pickInRound int not null ,
@@ -78,27 +89,29 @@ create table if not exists draftsPicks (
     constraint draftPickFKProspects foreign key (prospectID) references prospects (prospectID)
 );
 
-create table if not exists seasons (
+create table seasons (
     seasonID int,
     regularSeasonStartDate date not null ,
     regularSeasonEndDate date not null ,
     seasonEndDate date not null ,
     numberOfGames int not null ,
-    tiesInUse bool not null ,
-    olympic_participation bool not null ,
-    conferences_in_use bool not null ,
-    divisions_in_use bool not null ,
-    wild_card_in_use bool not null ,
+    tiesInUse bit not null ,
+    olympic_participation bit not null ,
+    conferences_in_use bit not null ,
+    divisions_in_use bit not null ,
+    wild_card_in_use bit not null ,
     primary key (seasonID)
 );
 
 create table schedules(
+	seasonID int not null,
     gameID int not null ,
     gameType char not null ,
     gameDate date not null ,
     homeTeamID int not null ,
     awayTeamID int not null ,
     primary key (gameID),
+	foreign key (seasonID) references seasons(seasonID),
     foreign key (homeTeamID) references teams (teamID),
     foreign key (awayTeamID) references teams (teamID)
 );
@@ -120,7 +133,7 @@ create table players (
 
 create table active (
     playerID int,
-    active bool,
+    active bit,
     date datetime,
     primary key (playerID, active, date),
     foreign key (playerID) references players (playerID)
@@ -129,7 +142,7 @@ create table active (
 
 create table rookies (
     playerID int,
-    rookie bool,
+    rookie bit,
     date datetime,
     primary key (playerID, date),
     foreign key (playerID) references players (playerID)
@@ -145,7 +158,7 @@ create table wears_number (
 
 create table captain(
     playerID int,
-    captain bool,
+    captain bit,
     date datetime,
     primary key (playerID, date),
     foreign key (playerID) references players (playerID)
@@ -153,7 +166,7 @@ create table captain(
 
 create table alternate_captain(
     playerID int,
-    alternateCaptain bool,
+    alternateCaptain bit,
     date datetime,
     primary key (playerID, date),
     foreign key (playerID) references players (playerID)
@@ -163,20 +176,28 @@ create table plays_for (
     playerID int,
     teamID int,
     date datetime,
-    primary key (playerID,date),
+    primary key (playerID,teamID, date),
     foreign key (playerID) references players (playerID),
     foreign key (teamID) references teams (teamID)
 );
 
-create table position (
-    playerID int,
-    primaryPositionCode varchar(20),
+create table positions (
+	primaryPositionCode varchar(20),
     primaryPositionName varchar(255),
     primaryPositionType varchar(255),
+	primary key (primaryPositionCode)
+	);
+
+create table plays_position (
+    playerID int,
+    primaryPositionCode varchar(20),
     date datetime,
     primary key (playerID, date),
-    foreign key (playerID) references players (playerID)
+    foreign key (playerID) references players (playerID),
+	foreign key (primaryPositionCode) references positions(primaryPositionCode)
 );
+
+
 
 create table live_feed (
     eventID int,
@@ -197,6 +218,7 @@ create table live_feed (
     foreign key (playerOneID) references players (playerID),
     foreign key (playerTwoID) references players (playerID)
 );
+
 
 
 

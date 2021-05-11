@@ -1,6 +1,6 @@
 import requests
 import mysql.connector.errors
-from MySQLCode import DatabaseConnection
+from SQLCode import DatabaseConnection
 
 years = list(range(2010, 2020))
 

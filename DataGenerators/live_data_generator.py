@@ -1,4 +1,4 @@
-from MySQLCode import DatabaseConnection
+from SQLCode import DatabaseConnection
 from mysql.connector.errors import IntegrityError
 from DataGenerators.players_generator import get_player, get_active_players, get_rookie, get_current_team, get_captain, get_position, get_alternate_captain, get_number
 import requests

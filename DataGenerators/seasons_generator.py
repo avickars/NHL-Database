@@ -1,5 +1,5 @@
 import requests
-from MySQLCode import DatabaseConnection
+from SQLCode import DatabaseConnection
 
 years = list(range(2000, 2020))
 
