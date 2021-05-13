@@ -1,8 +1,6 @@
 import requests
-import SQLCode.DatabaseCredentials as DBC
-import SQLCode.DatabaseConnection as DatabaseConnection
-# from SQLCode import DatabaseConnection
-# from SQLCode import DatabaseCredentials as DBC
+from SQLCode import DatabaseConnection
+from SQLCode import DatabaseCredentials as DBC
 from datetime import date
 
 creds = DBC.DataBaseCredentials()
@@ -20,7 +18,10 @@ while cont:
     try:
         url_data = url_data["conferences"]
     except KeyError:
-        break
+        conf += 1
+        if conf > 50:
+            break
+        continue
     conference = url_data[0]
     conferenceID = conference['id']
     conferenceName = f"\'{conference['name']}\'"
@@ -42,6 +43,8 @@ while cont:
     cursor.execute(query)
 
     conf += 1
+    if conf > 50:
+        break
 
 
 cursor.commit()

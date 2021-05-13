@@ -1,3 +1,5 @@
+create database hockey;
+
 use hockey;
 
 
@@ -45,9 +47,10 @@ create table divisions (
     abbreviation varchar(10) not null ,
     nameShort varchar(255),
     conferenceID int null ,
+	date date not null,
     active bit not null ,
     primary key (divisionID),
-    foreign key (conferenceID) references conferences (conferenceID)
+    foreign key (conferenceID,date) references conferences(conferenceID,date)
 );
 
 
