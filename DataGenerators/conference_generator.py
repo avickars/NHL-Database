@@ -6,7 +6,7 @@ from datetime import date
 
 def get_conferences():
     creds = DBC.DataBaseCredentials()
-    conn = DatabaseConnection.sql_connection('DESKTOP-VPNBD9V', 'hockey', creds.user, creds.password)
+    conn = DatabaseConnection.sql_connection(creds.server, creds.database, creds.user, creds.password)
 
     cursor = conn.open()
     cursor = cursor.cursor()
