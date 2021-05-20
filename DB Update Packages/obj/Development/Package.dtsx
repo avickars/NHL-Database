@@ -1,18 +1,18 @@
-﻿<?xml version="1.0"?>
+<?xml version="1.0"?>
 <DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
   DTS:refId="Package"
-  DTS:CreationDate="5/10/2021 7:36:03 PM"
+  DTS:CreationDate="5/13/2021 2:27:47 PM"
   DTS:CreationName="Microsoft.Package"
   DTS:CreatorComputerName="DESKTOP-MSBHSVV"
   DTS:CreatorName="DESKTOP-MSBHSVV\Aidan"
-  DTS:DTSID="{2B27BD00-79CA-4EDA-A24F-789D99AE9A14}"
+  DTS:DTSID="{12C9C859-609C-4978-9069-B6A35864FFAD}"
   DTS:ExecutableType="Microsoft.Package"
   DTS:LastModifiedProductVersion="15.0.2000.166"
   DTS:LocaleID="4105"
   DTS:ObjectName="Package"
   DTS:PackageType="5"
-  DTS:VersionBuild="1"
-  DTS:VersionGUID="{69FFE9FE-0C2D-4B5E-8D66-8A177A712F73}">
+  DTS:VersionBuild="16"
+  DTS:VersionGUID="{45A065B9-C0D6-4B0C-9873-252A69C90BBE}">
   <DTS:Property
     DTS:Name="PackageFormatVersion">8</DTS:Property>
   <DTS:Variables />
@@ -21,14 +21,19 @@
       DTS:refId="Package\Execute Process Task"
       DTS:CreationName="Microsoft.ExecuteProcess"
       DTS:Description="Execute Process Task"
-      DTS:DTSID="{246BC6AF-A7EF-47B5-B641-56C64ECE3C92}"
+      DTS:DTSID="{EBB9957C-3634-48FA-8323-F79C1E280CEE}"
       DTS:ExecutableType="Microsoft.ExecuteProcess"
       DTS:LocaleID="-1"
       DTS:ObjectName="Execute Process Task"
       DTS:TaskContact="Execute Process Task;Microsoft Corporation; SQL Server 2019; © 2019 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
       DTS:ThreadHint="0">
       <DTS:Variables />
-      <DTS:ObjectData />
+      <DTS:ObjectData>
+        <ExecuteProcessData
+          Executable="C:\Users\Aidan\anaconda3\envs\tf\python.exe"
+          Arguments="test.py"
+          WorkingDirectory="C:\Users\Aidan\Documents\Git Repositories\NHL-Database" />
+      </DTS:ObjectData>
     </DTS:Executable>
   </DTS:Executables>
   <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
@@ -46,7 +51,7 @@
         <NodeLayout
           Size="188,42"
           Id="Package\Execute Process Task"
-          TopLeft="443,180" />
+          TopLeft="503,215" />
       </GraphLayout>
     </LayoutInfo>
   </Package>

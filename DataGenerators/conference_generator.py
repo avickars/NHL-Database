@@ -4,7 +4,7 @@ from SQLCode import DatabaseCredentials as DBC
 from datetime import date
 
 creds = DBC.DataBaseCredentials()
-conn = DatabaseConnection.sql_connection('homeserver', 'hockey', creds.user, creds.password)
+conn = DatabaseConnection.sql_connection('DESKTOP-VPNBD9V', 'hockey', creds.user, creds.password)
 
 cursor = conn.open()
 cursor = cursor.cursor()
