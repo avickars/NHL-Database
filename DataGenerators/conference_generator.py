@@ -4,7 +4,7 @@ from SQLCode import DatabaseCredentials as DBC
 from datetime import date
 
 
-def conference_generator():
+def get_conferences():
     creds = DBC.DataBaseCredentials()
     conn = DatabaseConnection.sql_connection('DESKTOP-VPNBD9V', 'hockey', creds.user, creds.password)
 

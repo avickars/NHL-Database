@@ -3,6 +3,7 @@ from SQLCode import DatabaseConnection
 from SQLCode import DatabaseCredentials as DBC
 from datetime import date
 
+
 def get_divisions():
     creds = DBC.DataBaseCredentials()
     conn = DatabaseConnection.sql_connection('localhost', 'hockey', creds.user, creds.password)
@@ -54,7 +55,7 @@ def get_divisions():
                 f"{abbreviation}," \
                 f"{shortName}," \
                 f"{conferenceID}," \
-                f"\'{date.today()}\',"\
+                f"\'{date.today()}\'," \
                 f"{active})"
         cursor.execute(query)
 
