@@ -2,6 +2,92 @@ create database hockey;
 
 use hockey;
 
+insert into team_plays_in_division values (18, 26, '2021-05-21 20:19:26')
+
+select * from team_plays_in_division
+
+select * from divisions where divisionID=26
+select * from teams where teamID=18
+
+create table conferences (
+    conferenceID int,
+    conferenceName varchar(255) not null ,
+    abbreviation varchar(10) not null ,
+    shortName varchar(255) not null,
+    primary key (conferenceID)
+);
+
+create table conference_activity(
+	conferenceID int not null,
+	date datetime not null,
+	active bit not null
+	primary key (conferenceID, date),
+	foreign key (conferenceID) references conferences(conferenceID),
+);
+
+create table divisions (
+    divisionID int,
+    divisionName varchar(255) not null ,
+    abbreviation varchar(10) not null ,
+    nameShort varchar(255),
+    conferenceID int null ,
+    primary key (divisionID),
+    foreign key (conferenceID) references conferences(conferenceID)
+);
+
+create table division_activity(
+	divisionID int not null,
+	date datetime not null,
+	active bit not null,
+	primary key(divisionID, date),
+	foreign key (divisionID) references divisions(divisionID)
+);
+
+create table franchises (
+    franchiseID int not null ,
+    firstSeasonID int not null ,
+    lastSeasonID int,
+    constraint franchisesPL primary key (franchiseID)
+);
+
+
+create table teams (
+    teamID int not null ,
+	locationName varchar(255) not null,
+	teamName varchar(255) not null,
+    abbreviation varchar(255),
+    officialSiteUrl varchar(255),
+	franchiseID int,
+	primary key (teamID),
+	foreign key (franchiseID) references franchises (franchiseID)
+);
+
+create table team_activity(
+	teamID int not null,
+	date datetime not null,
+	active bit not null,
+	primary key(teamID, date),
+	foreign key (teamID) references teams(teamID)
+);
+
+create table team_plays_in_division(
+	teamID int not null,
+	divisionID int,
+	date datetime not null,
+	primary key (teamID, date),
+	foreign key (divisionID) references divisions (divisionID),
+	foreign key (teamID) references teams (teamID)
+);
+
+create table team_plays_in_venue (
+	venueName varchar(255),
+	venueCity varchar(255),
+	timeZone varchar(255),
+	date datetime,
+	teamID int,
+	foreign key (teamID) references teams (teamID),
+	primary key (date, teamID)
+)
 
 create table prospects (
     prospectID int ,
@@ -31,54 +117,6 @@ create table prospectCategory (
 
 
 
-create table conferences (
-    conferenceID int,
-    conferenceName varchar(255) not null ,
-    abbreviation varchar(10) not null ,
-    shortName varchar(255) not null ,
-    active bit not null ,
-	date date not null,
-    primary key (conferenceID, date)
-);
-
-create table divisions (
-    divisionID int,
-    divisionName varchar(255) not null ,
-    abbreviation varchar(10) not null ,
-    nameShort varchar(255),
-    conferenceID int null ,
-	date date not null,
-    active bit not null ,
-    primary key (divisionID),
-    foreign key (conferenceID,date) references conferences(conferenceID,date)
-);
-
-
-
-create table franchises (
-    franchiseID int not null ,
-    firstSeasonID int not null ,
-    lastSeasonID int,
-    mostRecentTeamID int not null ,
-    teamName varchar(255)  not null ,
-    locationName varchar(255)  not null ,
-    constraint franchisesPL primary key (franchiseID)
-);
-
-create table teams (
-    teamID int not null ,
-    venueName varchar(255),
-    venueCity varchar(255),
-    timeZone varchar(255),
-    abbreviation varchar(255),
-    divisionID int,
-    officialSiteUrl varchar(255),
-    franchiseID int not null ,
-    active bit not null ,
-    constraint teamPK primary key (teamID),
-    constraint teamsFKFranchise foreign key (franchiseID) references franchises(franchiseID),
-    constraint teamsFKDivision foreign key (divisionID) references divisions(divisionID)
-);
 create table draftsPicks (
     draftYear smallint not null ,
     round int not null ,

@@ -1,6 +1,8 @@
 import requests
-import mysql.connector.errors
+import requests
 from SQLCode import DatabaseConnection
+from SQLCode import DatabaseCredentials as DBC
+from datetime import date
 
 years = list(range(2010, 2020))
 

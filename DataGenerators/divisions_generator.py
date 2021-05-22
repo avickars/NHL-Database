@@ -1,21 +1,25 @@
 import requests
 from SQLCode import DatabaseConnection
 from SQLCode import DatabaseCredentials as DBC
-from datetime import date
+from DataGenerators.get_time import get_time
+import pandas as pd
 
 
 def get_divisions():
+    # Opening connection
     creds = DBC.DataBaseCredentials()
     conn = DatabaseConnection.sql_connection(creds.server, creds.database, creds.user, creds.password)
+    connection = conn.open()
+    cursor = connection.cursor()
 
-    cursor = conn.open()
-    cursor = cursor.cursor()
+    # Getting the current conferences
+    divisions = pd.read_sql_query("select * from divisions", connection)
 
     div = 1
     cont = True
     while cont:
+        # Getting division information
         url = requests.get(f"https://statsapi.web.nhl.com/api/v1/divisions/{div}")
-        # print(f"https://statsapi.web.nhl.com/api/v1/divisions/{div}")
         url_data = url.json()
         try:
             url_data = url_data["divisions"]
@@ -33,36 +37,39 @@ def get_divisions():
             continue
 
         divisionID = division['id']
-        divisionName = f"\'{division['name']}\'"
-        abbreviation = f"\'{division['abbreviation']}\'"
-        try:
-            shortName = f"\'{division['nameShort']}\'"
-        except KeyError:
-            shortName = 'NULL'
+        # Testing to see if we already have the division in the system
+        if len(divisions[divisions['divisionID'] == divisionID]) == 0:
+            divisionName = f"\'{division['name']}\'"
+            abbreviation = f"\'{division['abbreviation']}\'"
+            try:
+                shortName = f"\'{division['nameShort']}\'"
+            except KeyError:
+                shortName = 'NULL'
+            try:
+                conferenceID = division['conference']['id']
+            except KeyError:
+                conferenceID = 'NULL'
+
+            query = f"insert into divisions values (" \
+                    f"{divisionID}," \
+                    f"{divisionName}," \
+                    f"{abbreviation}," \
+                    f"{shortName}," \
+                    f"{conferenceID})"
+            cursor.execute(query)
+            cursor.commit()
+
         active = division['active']
         if active:
             active = 1
         else:
             active = 0
-        try:
-            conferenceID = division['conference']['id']
-        except KeyError:
-            conferenceID = 'NULL'
-
-        query = f"insert into divisions values (" \
-                f"{divisionID}," \
-                f"{divisionName}," \
-                f"{abbreviation}," \
-                f"{shortName}," \
-                f"{conferenceID}," \
-                f"\'{date.today()}\'," \
-                f"{active})"
+        query = f"insert into division_activity (divisionID, date, active) values ({divisionID}, \'{get_time()}\', {active})"
         cursor.execute(query)
+        cursor.commit()
 
         div += 1
         if div > 50:
             break
-
-    cursor.commit()
 
     conn.close()
