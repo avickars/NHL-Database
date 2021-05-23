@@ -3,16 +3,18 @@ from SQLCode import DatabaseConnection
 from SQLCode import DatabaseCredentials as DBC
 from DataGenerators.get_time import get_time
 import pandas as pd
+import numpy as np
 import pyodbc
 
-from datetime import date, datetime
+# from datetime import date, datetime
+import datetime
 
 
 def get_current_seasonID():
-    currentYear = int(datetime.now().strftime("%Y"))
-    today = date.today()
+    currentYear = int(datetime.datetime.now().strftime("%Y"))
+    today = datetime.date.today()
 
-    jan1 = datetime.strptime('Jan 1', '%b %d').date().replace(year=today.year)
+    jan1 = datetime.datetime.strptime('Jan 1', '%b %d').date().replace(year=today.year)
 
     if today >= jan1:
         return f"{currentYear - 1}{currentYear}"
@@ -134,26 +136,30 @@ def get_teams(teamID):
     conn.close()
 
 
-def get_schedule():
+def get_daily_schedule():
     # Opening connection
     creds = DBC.DataBaseCredentials()
     conn = DatabaseConnection.sql_connection(creds.server, creds.database, creds.user, creds.password)
     connection = conn.open()
     cursor = connection.cursor()
 
-    # Getting the current season
-    seasons = pd.read_sql_query('select seasonID from seasons where regularSeasonStartDate>=\'2000-10-04\';', connection)
+    # Getting the most recent run
+    mostRecentRun = pd.read_sql_query("select top 1 date from script_execution where script = 'get_daily_schedule' order by date desc",
+                                      connection)
 
-    for index, season in seasons.iterrows():
-        print(season[0])
+    # Getting the games from the current season
+    games = pd.read_sql_query(f"select gameID from schedules where seasonID={get_current_seasonID()}", connection)
 
-        url = requests.get(f"https://statsapi.web.nhl.com/api/v1/schedule?season={season[0]}")
+    # Converting it from np.datetime64 to datetime
+    # CITATION: https://stackoverflow.com/questions/13703720/converting-between-datetime-timestamp-and-datetime64
+    mostRecentRun = (mostRecentRun['date'].values[0] - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
+    mostRecentRun = datetime.datetime.utcfromtimestamp(mostRecentRun)  # Adding one day on since we already ran it
+    mostRecentRun = mostRecentRun.date()
+    while mostRecentRun < datetime.date.today():
+        url = requests.get(f"https://statsapi.web.nhl.com/api/v1/schedule?date={mostRecentRun}")
         url_data = url.json()
-        for date in url_data['dates']:
-            # To delete this later, only keeping for now
-            if not datetime.strptime(date['date'], '%Y-%m-%d').date() < datetime.today().date():
-                continue
 
+        for date in url_data['dates']:
             gameDate = f"\'{date['date']}\'"
 
             for game in date['games']:
@@ -165,29 +171,45 @@ def get_schedule():
 
                 awayTeamID = game['teams']['away']['team']['id']
 
-                query = f"insert into schedules values (" \
-                        f"{season[0]}," \
-                        f"{gameID}," \
-                        f"{gameType}," \
-                        f"{gameDate}," \
-                        f"{homeTeamID}," \
-                        f"{awayTeamID})"
+                season = game['season']
 
-                cursor = connection.cursor()
-                # Trying to execute the query
-                try:
-                    cursor.execute(query)
-                except pyodbc.IntegrityError:
-                    # I found there were a lot of outlier teams that I didn't catch in teams_generator, so adding them in here
-                    print(query)
-                    get_teams(homeTeamID)
-                    get_teams(awayTeamID)
-                    cursor.execute(query)
-                except pyodbc.ProgrammingError:
-                    return 1
-                connection.commit()
+                # If we haven't inserted this game before, lets insert it
+                if len(games[games['gameID'] == gameID]) == 0:
+                    query = f"insert into schedules values (" \
+                            f"{season}," \
+                            f"{gameID}," \
+                            f"{gameType}," \
+                            f"{gameDate}," \
+                            f"{homeTeamID}," \
+                            f"{awayTeamID})"
+                    try:
+                        cursor.execute(query)
+                    except pyodbc.IntegrityError:
+                        get_teams(homeTeamID)
+                        get_teams(awayTeamID)
+                        cursor.execute(query)
+                    cursor.commit()
+
+                # Otherwise, it maybe got rescheduled, so lets update the schedule
+                else:
+                    query = f"update schedules" \
+                            f" set seasonID = {season}," \
+                            f"gameID = {gameID}," \
+                            f"gameType = {gameType}," \
+                            f"gameDate = {gameDate}," \
+                            f"homeTeamID = {homeTeamID}," \
+                            f"awayTeamID = {awayTeamID}" \
+                            f" where gameID = {gameID}"
+                    try:
+                        cursor.execute(query)
+                    except pyodbc.IntegrityError:
+                        get_teams(homeTeamID)
+                        get_teams(awayTeamID)
+                        cursor.execute(query)
+                    cursor.commit()
+
+
+        # Incrementing the most recent run, since we have now updated the schedule to games up to mostRecentRun not (not including it though)
+        mostRecentRun = mostRecentRun + datetime.timedelta(days=1)
 
     conn.close()
-
-
-get_schedule()

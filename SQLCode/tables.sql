@@ -2,13 +2,6 @@ create database hockey;
 
 use hockey;
 
-insert into team_plays_in_division values (18, 26, '2021-05-21 20:19:26')
-
-select * from team_plays_in_division
-
-select * from divisions where divisionID=26
-select * from teams where teamID=18
-
 create table conferences (
     conferenceID int,
     conferenceName varchar(255) not null ,
@@ -89,6 +82,64 @@ create table team_plays_in_venue (
 	primary key (date, teamID)
 )
 
+
+create table seasons (
+    seasonID int,
+    regularSeasonStartDate date not null ,
+    regularSeasonEndDate date not null ,
+    seasonEndDate date not null ,
+    numberOfGames int not null ,
+    tiesInUse bit not null ,
+    olympic_participation bit not null ,
+    conferences_in_use bit not null ,
+    divisions_in_use bit not null ,
+    wild_card_in_use bit not null ,
+    primary key (seasonID)
+);
+
+create table schedules(
+	seasonID int not null,
+    gameID int not null ,
+    gameType varchar(20) not null ,  -- this has to be a varchar(20) because the are a couple types that are multiple letters
+    gameDate date not null ,
+    homeTeamID int not null ,
+    awayTeamID int not null ,
+    primary key (gameID),
+	foreign key (seasonID) references seasons(seasonID),
+    foreign key (homeTeamID) references teams (teamID),
+    foreign key (awayTeamID) references teams (teamID)
+);
+
+
+create table script_execution (
+    script varchar(255),
+    date datetime,
+    primary key (script, date)
+);
+
+create table live_feed (
+    eventID int,
+    gameID int,
+    event varchar(255),
+    eventCode varchar(255),
+    eventTypeID varchar(255),
+    eventDescription varchar(255),
+    secondaryType varchar(255),
+    periodNum varchar(255),
+    periodTime time,
+    playerOneID int,
+    playerTwoID int,
+    xCoordinate decimal,
+    yCoordinate decimal,
+    primary key (gameID, eventID),
+    foreign key (gameID) references schedules(gameID),
+    foreign key (playerOneID) references players (playerID),
+    foreign key (playerTwoID) references players (playerID)
+);
+
+
+
+
 create table prospects (
     prospectID int ,
     firstName varchar(255) not null,
@@ -130,32 +181,7 @@ create table draftsPicks (
     constraint draftPickFKProspects foreign key (prospectID) references prospects (prospectID)
 );
 
-create table seasons (
-    seasonID int,
-    regularSeasonStartDate date not null ,
-    regularSeasonEndDate date not null ,
-    seasonEndDate date not null ,
-    numberOfGames int not null ,
-    tiesInUse bit not null ,
-    olympic_participation bit not null ,
-    conferences_in_use bit not null ,
-    divisions_in_use bit not null ,
-    wild_card_in_use bit not null ,
-    primary key (seasonID)
-);
 
-create table schedules(
-	seasonID int not null,
-    gameID int not null ,
-    gameType char not null ,
-    gameDate date not null ,
-    homeTeamID int not null ,
-    awayTeamID int not null ,
-    primary key (gameID),
-	foreign key (seasonID) references seasons(seasonID),
-    foreign key (homeTeamID) references teams (teamID),
-    foreign key (awayTeamID) references teams (teamID)
-);
 
 create table players (
     playerID int,
