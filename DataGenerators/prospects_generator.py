@@ -3,14 +3,20 @@ from SQLCode import DatabaseConnection
 from SQLCode import DatabaseCredentials as DBC
 from DataGenerators.get_time import get_time
 import pandas as pd
+import numpy as np
+import datetime
+import pyodbc
+from DataGenerators.players_generator import *
 
 
 def get_prospects():
-    url_string = "https://statsapi.web.nhl.com/api/v1/draft/prospects"
+    # Opening connection
+    creds = DBC.DataBaseCredentials()
+    conn = DatabaseConnection.sql_connection(creds.server, creds.database, creds.user, creds.password)
+    connection = conn.open()
+    cursor = connection.cursor()
 
-    connection = DatabaseConnection.mysql_open()
-
-    url = requests.get(url_string)
+    url = requests.get("https://statsapi.web.nhl.com/api/v1/draft/prospects")
     url_data = url.json()
     url_data = url_data['prospects']
 
@@ -125,11 +131,6 @@ def get_prospects():
                 f"{amateurTeam}," \
                 f"{amateurLeague})"
 
-        cursor = connection.cursor()
-        try:
-            cursor.execute(query)
-        except:
-            print("Unable to execute: ", query)
+        cursor.execute(query)
         connection.commit()
-
-    DatabaseConnection.mysql_close(connection)
+    conn.close()

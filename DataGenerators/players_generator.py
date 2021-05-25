@@ -1,4 +1,41 @@
 import requests
+from SQLCode import DatabaseConnection
+from SQLCode import DatabaseCredentials as DBC
+import pandas as pd
+from DataGenerators.get_time import get_time
+
+
+def get_new_players():
+    # Opening connection
+    creds = DBC.DataBaseCredentials()
+    conn = DatabaseConnection.sql_connection(creds.server, creds.database, creds.user, creds.password)
+    connection = conn.open()
+
+    # Getting the current conferences
+    players = pd.read_sql_query("select distinct playerID from live_feed where playerID not in (select playerID from players)", connection)
+
+    for index, playerID in players.iterrows():
+        playerID = playerID.values[0]
+        get_player(connection, playerID)
+        get_other_player_info(connection, playerID, f"\'{get_time()}\'")
+
+    conn.close()
+
+
+def update_players():
+    # Opening connection
+    creds = DBC.DataBaseCredentials()
+    conn = DatabaseConnection.sql_connection(creds.server, creds.database, creds.user, creds.password)
+    connection = conn.open()
+
+    # Getting the current conferences
+    players = pd.read_sql_query("select playerID from players", connection)
+
+    for index, playerID in players.iterrows():
+        playerID = playerID.values[0]
+        get_other_player_info(connection, playerID, f"\'{get_time()}\'")
+
+    conn.close()
 
 
 def get_player(connection, playerID):
@@ -22,11 +59,6 @@ def get_player(connection, playerID):
         lastName = 'NULL'
 
     try:
-        primaryNumber = player['primaryNumber']
-    except KeyError:
-        primaryNumber = 'NULL'
-
-    try:
         birthDate = f"\'{player['birthDate']}\'"
     except KeyError:
         birthDate = 'NULL'
@@ -47,15 +79,10 @@ def get_player(connection, playerID):
         birthCountry = 'NULL'
 
     try:
-        height = player['height'].replace('\"', '')
-        height = f"\"{height}\""
+        height = player['height'].replace('\'', '"')
+        height = f"\'{height}\'"
     except KeyError:
         height = 'NULL'
-
-    try:
-        weight = player['weight']
-    except KeyError:
-        weight = 'NULL'
 
     try:
         shootsCatches = f"\'{player['shootsCatches']}\'"
@@ -76,7 +103,6 @@ def get_player(connection, playerID):
             f"{birthStateProvince}," \
             f"{birthCountry}," \
             f"{height}," \
-            f"{weight}," \
             f"{shootsCatches}," \
             f"{rosterStatus})"
 
@@ -85,7 +111,7 @@ def get_player(connection, playerID):
     connection.commit()
 
 
-def get_active_players(connection, playerID, date):
+def get_other_player_info(connection, playerID, date):
     url_string = f"https://statsapi.web.nhl.com/api/v1/people/{playerID}"
     url = requests.get(url_string)
     url_data = url.json()
@@ -95,12 +121,57 @@ def get_active_players(connection, playerID, date):
     except KeyError:
         return
 
+    get_weight(connection, playerID, date, player)
+    get_active_players(connection, playerID, date, player)
+    # get_rookie(connection, playerID, date, player)
+    # get_current_team(connection, playerID, date, player)
+    get_captain(connection, playerID, date, player)
+    get_position(connection, playerID, date, player)
+    get_alternate_captain(connection, playerID, date, player)
+    get_number(connection, playerID, date, player)
+    get_roster_status(connection, playerID, date, player)
+
+
+def get_roster_status(connection, playerID, date, player):
+    try:
+        rosterStatus = player['rosterStatus']
+    except KeyError:
+        rosterStatus = 'NULL'
+    query = f"insert into roster_status values (" \
+            f"{playerID}," \
+            f"{rosterStatus}," \
+            f"{date})"
+    cursor = connection.cursor()
+    cursor.execute(query)
+    connection.commit()
+
+
+def get_weight(connection, playerID, date, player):
+    try:
+        weight = player['weight']
+    except KeyError:
+        weight = 'NULL'
+
+    query = f"insert into player_weighs values (" \
+            f"{playerID}," \
+            f"{weight}," \
+            f"{date})"
+    cursor = connection.cursor()
+    cursor.execute(query)
+    connection.commit()
+
+
+def get_active_players(connection, playerID, date, player):
     try:
         active = player['active']
     except KeyError:
         active = 'NULL'
+    if active:
+        active = 1
+    else:
+        active = 0
 
-    query = f"insert into active values (" \
+    query = f"insert into player_active values (" \
             f"{playerID}," \
             f"{active}," \
             f"{date})"
@@ -109,20 +180,15 @@ def get_active_players(connection, playerID, date):
     connection.commit()
 
 
-def get_rookie(connection, playerID, date):
-    url_string = f"https://statsapi.web.nhl.com/api/v1/people/{playerID}"
-    url = requests.get(url_string)
-    url_data = url.json()
-
-    try:
-        player = url_data['people'][0]
-    except KeyError:
-        return
-
+def get_rookie(connection, playerID, date, player):
     try:
         rookie = player['rookie']
     except KeyError:
         rookie = 'NULL'
+    if rookie:
+        rookie = 1
+    else:
+        rookie = 0
 
     query = f"insert into rookies values (" \
             f"{playerID}," \
@@ -133,16 +199,7 @@ def get_rookie(connection, playerID, date):
     connection.commit()
 
 
-def get_current_team(connection, playerID, date):
-    url_string = f"https://statsapi.web.nhl.com/api/v1/people/{playerID}"
-    url = requests.get(url_string)
-    url_data = url.json()
-
-    try:
-        player = url_data['people'][0]
-    except KeyError:
-        return
-
+def get_current_team(connection, playerID, date, player):
     try:
         currentTeamID = player['currentTeam']['id']
     except KeyError:
@@ -157,20 +214,15 @@ def get_current_team(connection, playerID, date):
     connection.commit()
 
 
-def get_captain(connection, playerID, date):
-    url_string = f"https://statsapi.web.nhl.com/api/v1/people/{playerID}"
-    url = requests.get(url_string)
-    url_data = url.json()
-
-    try:
-        player = url_data['people'][0]
-    except KeyError:
-        return
-
+def get_captain(connection, playerID, date, player):
     try:
         captain = player['captain']
     except KeyError:
         captain = 'NULL'
+    if captain:
+        captain = 1
+    else:
+        captain = 0
 
     query = f"insert into captain values (" \
             f"{playerID}," \
@@ -181,16 +233,7 @@ def get_captain(connection, playerID, date):
     connection.commit()
 
 
-def get_position(connection, playerID, date):
-    url_string = f"https://statsapi.web.nhl.com/api/v1/people/{playerID}"
-    url = requests.get(url_string)
-    url_data = url.json()
-
-    try:
-        player = url_data['people'][0]
-    except KeyError:
-        return
-
+def get_position(connection, playerID, date, player):
     try:
         primaryPositionCode = f"\'{player['primaryPosition']['code']}\'"
     except KeyError:
@@ -206,31 +249,35 @@ def get_position(connection, playerID, date):
     except KeyError:
         primaryPositionType = 'NULL'
 
-    query = f"insert into position values (" \
+    cursor = connection.cursor()
+
+    query = f"insert into plays_position values (" \
             f"{playerID}," \
             f"{primaryPositionCode}," \
-            f"{primaryPositionName}," \
-            f"{primaryPositionType}," \
             f"{date})"
 
-    cursor = connection.cursor()
-    cursor.execute(query)
-    connection.commit()
-
-
-def get_alternate_captain(connection, playerID, date):
-    url_string = f"https://statsapi.web.nhl.com/api/v1/people/{playerID}"
-    url = requests.get(url_string)
-    url_data = url.json()
-
     try:
-        player = url_data['people'][0]
-    except KeyError:
-        return
+        cursor.execute(query)
+    except pyodbc.IntegrityError:
+        cursor.execute(f"insert into positions values ("
+                       f"{primaryPositionCode},"
+                       f"{primaryPositionName},"
+                       f"{primaryPositionType})")
+        connection.commit()
+
+        cursor.execute(query)
+        connection.commit()
+
+
+def get_alternate_captain(connection, playerID, date, player):
     try:
         alternateCaptain = player['alternateCaptain']
     except KeyError:
         alternateCaptain = 'NULL'
+    if alternateCaptain:
+        alternateCaptain = 1
+    else:
+        alternateCaptain = 0
 
     query = f"insert into alternate_captain values (" \
             f"{playerID}," \
@@ -241,16 +288,7 @@ def get_alternate_captain(connection, playerID, date):
     connection.commit()
 
 
-def get_number(connection, playerID, date):
-    url_string = f"https://statsapi.web.nhl.com/api/v1/people/{playerID}"
-    url = requests.get(url_string)
-    url_data = url.json()
-
-    try:
-        player = url_data['people'][0]
-    except KeyError:
-        return
-
+def get_number(connection, playerID, date, player):
     try:
         primaryNumber = f"\'{player['primaryNumber']}\'"
     except KeyError:

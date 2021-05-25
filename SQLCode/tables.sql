@@ -117,72 +117,6 @@ create table script_execution (
     primary key (script, date)
 );
 
-create table live_feed (
-    eventID int,
-    gameID int,
-    event varchar(255),
-    eventCode varchar(255),
-    eventTypeID varchar(255),
-    eventDescription varchar(255),
-    secondaryType varchar(255),
-    periodNum varchar(255),
-    periodTime time,
-    playerOneID int,
-    playerTwoID int,
-    xCoordinate decimal,
-    yCoordinate decimal,
-    primary key (gameID, eventID),
-    foreign key (gameID) references schedules(gameID),
-    foreign key (playerOneID) references players (playerID),
-    foreign key (playerTwoID) references players (playerID)
-);
-
-
-
-
-create table prospects (
-    prospectID int ,
-    firstName varchar(255) not null,
-    lastName varchar(255) not null,
-    birthDate date,
-    birthCity varchar(255),
-    birthStateProvince varchar(255),
-    birthCountry varchar(255),
-    height varchar(255),
-    weight int,
-    shoots char,
-    position char,
-    nhlPlayerID int,
-    prospectCategoryID int,
-    prospectCategoryName varchar(255),
-    amateurTeam varchar(255),
-    amateurLeague varchar(255),
-    constraint prospectPK primary key (prospectID)
-);
-
-create table prospectCategory (
-	prospectCategoryID int,
-    prospectCategoryName varchar(255),
-	constraint prospectCategoryPK primary key (prospectCategoryID)
-);
-
-
-
-create table draftsPicks (
-    draftYear smallint not null ,
-    round int not null ,
-    pickOverall int not null ,
-    pickInRound int not null ,
-    teamID int not null ,
-    prospectID int null ,
-    fullName varchar(255) not null ,
-    constraint draftsPicksPK primary key (draftYear,pickOverall),
-    constraint draftPickFKTeam foreign key (teamID) references teams(teamID),
-    constraint draftPickFKProspects foreign key (prospectID) references prospects (prospectID)
-);
-
-
-
 create table players (
     playerID int,
     firstName varchar(255),
@@ -192,13 +126,28 @@ create table players (
     birthStateProvince varchar(255),
     birthCountry varchar(255),
     height varchar(255),
-    weight int,
     shootsCatches char(1),
-    rosterStatus char(1),
     primary key (playerID)
 );
 
-create table active (
+create table roster_status (
+    playerID int,
+    rosterStatus char(1),
+    date datetime,
+    primary key (playerID, date),
+    foreign key (playerID) references players (playerID)
+);
+
+create table player_weighs (
+    playerID int,
+    weight int,
+    date datetime,
+    primary key (playerID, date),
+    foreign key (playerID) references players (playerID)
+);
+
+
+create table player_active (
     playerID int,
     active bit,
     date datetime,
@@ -206,14 +155,6 @@ create table active (
     foreign key (playerID) references players (playerID)
 );
 
-
-create table rookies (
-    playerID int,
-    rookie bit,
-    date datetime,
-    primary key (playerID, date),
-    foreign key (playerID) references players (playerID)
-);
 
 create table wears_number (
     playerID int,
@@ -265,9 +206,9 @@ create table plays_position (
 );
 
 
-
-create table live_feed (
+create table live_feed_temp (
     eventID int,
+    eventSubID int,
     gameID int,
     event varchar(255),
     eventCode varchar(255),
@@ -276,15 +217,56 @@ create table live_feed (
     secondaryType varchar(255),
     periodNum varchar(255),
     periodTime time,
-    playerOneID int,
-    playerTwoID int,
+    playerID int,
+    playerType varchar(255),
     xCoordinate decimal,
     yCoordinate decimal,
-    primary key (gameID, eventID),
+    teamID int,
+    primary key (gameID, eventID, eventSubID),
     foreign key (gameID) references schedules(gameID),
-    foreign key (playerOneID) references players (playerID),
-    foreign key (playerTwoID) references players (playerID)
+    foreign key (teamID) references teams (teamID)
 );
+
+
+create table prospects (
+    prospectID int ,
+    firstName varchar(255) not null,
+    lastName varchar(255) not null,
+    birthDate date,
+    birthCity varchar(255),
+    birthStateProvince varchar(255),
+    birthCountry varchar(255),
+    height varchar(255),
+    weight int,
+    shoots char,
+    position char,
+    nhlPlayerID int,
+    prospectCategoryID int,
+    prospectCategoryName varchar(255),
+    amateurTeam varchar(255),
+    amateurLeague varchar(255),
+    constraint prospectPK primary key (prospectID)
+);
+
+create table prospectCategory (
+	prospectCategoryID int,
+    prospectCategoryName varchar(255),
+	constraint prospectCategoryPK primary key (prospectCategoryID)
+);
+
+create table draftsPicks (
+    draftYear smallint not null ,
+    round int not null ,
+    pickOverall int not null ,
+    pickInRound int not null ,
+    teamID int not null ,
+    prospectID int null ,
+    fullName varchar(255) not null ,
+    constraint draftsPicksPK primary key (draftYear,pickOverall),
+    constraint draftPickFKTeam foreign key (teamID) references teams(teamID),
+    constraint draftPickFKProspects foreign key (prospectID) references prospects (prospectID)
+);
+
 
 
 
