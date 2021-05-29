@@ -48,58 +48,164 @@ inner join
 on t.teamID = tv.teamID
 inner join franchises f on f.franchiseID = t.franchiseID;
 
+drop table live_feed_temp;
 
-select lf.playerID, count(*)
+
+-- Number of assists by player, game, gametype,season and team
+select lf.playerID, s.gameType, lf.gameID, s.seasonID, count(*)  as 'assists', lf.teamID
+    from live_feed_temp lf
+    inner join schedules s
+        on s.gameID = lf.gameID
+    where lf.eventTypeID = 'GOAL' and
+          lf.playerType = 'Assist' and
+          (s.gameType = 'P' or s.gameType = 'R')
+    group by lf.playerID, lf.gameID, s.gameType, s.seasonID, lf.teamID
+
+
+
+
+-- All players play for by individual game (contains gameID, playerID, teamID)
+drop view if exists plays_for;
+create view plays_for as
+select *
+from (
+select *,
+    row_number() over (partition by playerID order by gameID desc ) as 'rowNum'
+from (
+select *
+from
+     (-- Goalie plays for
+     select distinct lf.gameID,
+                     lf.playerID,
+                     iif(lf.teamID != s.homeTeamID, s.homeTeamID, s.awayTeamID) as 'teamID'
+     from live_feed_temp lf
+         inner join schedules s
+             on s.gameID = lf.gameID
+     where lf.eventTypeID='SHOT' and playerType = 'Goalie') g
+union
+    select *
+    from
+         ( -- Player plays for
+        select distinct lf.gameID,
+                        lf.playerID,
+                        lf.teamID
+        from live_feed_temp lf
+        where (eventTypeID = 'FACEOFF' and playerType = 'Winner') or
+              (eventTypeID = 'HIT' and playerType = 'HITTER') or
+              (eventTypeID = 'PENALTY' and playerType = 'PenaltyOn') or
+              (eventTypeID = 'GOAL' and (playerType = ' Scorer' or playerType = 'Assist')) or
+              (eventTypeID = 'SHOT' and playerType = 'Shooter') or
+              (eventTypeID = 'GIVEAWAY' and playerType = 'PlayerID') or
+              (eventTypeID = 'MISSED_SHOT' and playerType = 'Missed Shot') or
+              (eventTypeID = 'Takeaway' and playerType='PlayerID')) pf) r) r2
+where r2.rowNum=1
+
+
+select lf.playerID,
+        s.gameType,
+        lf.gameID,
+        s.seasonID,
+        count(*) as 'penalty',
+        lf.teamID
 from live_feed_temp lf
-inner join schedules s
-    on s.gameID = lf.gameID
-where lf.eventTypeID = 'GOAL' and
-      lf.playerType = 'Scorer' and
-      (s.gameType='R' or s.gameType='P')
+inner join schedules s on lf.gameID = s.gameID
+where lf.eventTypeID = 'PENALTY' and
+      lf.playerType = 'PenaltyOn' and
+      s.gameType = 'R'
+group by lf.playerID, lf.gameID, s.gameType, s.seasonID, lf.teamID
 
--- GOALS
-select lf.playerID, s.gameType, s.seasonID,count(*) as 'goals'
-from live_feed_temp lf
-inner join schedules s
-    on s.gameID = lf.gameID
-where lf.eventTypeID = 'GOAL' and
-      lf.playerType = 'Scorer' and
-      (s.gameType='R' or s.gameType='P')
-group by lf.playerID, s.gameType, s.seasonID
-
--- ASSISTS
-select lf.playerID, s.gameType, s.seasonID,count(*) as 'assists'
-from live_feed_temp lf
-inner join schedules s
-    on s.gameID = lf.gameID
-where lf.eventTypeID = 'GOAL' and
-      lf.playerType = 'Assist' and
-      (s.gameType='R' or s.gameType='P')
-group by lf.playerID, s.gameType, s.seasonID
+select top 50 * from live_feed_temp where eventTypeID='PENALTY'
 
 
 
+ -- Number of assists,goals and shots by player, game, season and team (for regular season)
+select sum(goals) ,playerID
+from (
+select ISNULL(assists.playerID, ISNULL(goals.playerID, ISNULL(shots.playerID, penalties.playerID))) as 'playerID',
+       ISNULL(assists.seasonID, ISNULL(goals.playerID, ISNULL(shots.playerID, penalties.playerID))) as 'seasonID',
+       ISNULL(assists.teamID, ISNULL(goals.teamID, ISNULL(shots.playerID, penalties.playerID))) as 'teamID',
+       ISNULL(assists.assists, 0) as 'assists',
+       ISNULL(goals.goals, 0) as 'goals',
+       ISNULL(assists.assists, 0) + ISNULL(goals.goals, 0) as 'points',
+       ISNULL(shots.shots, 0) as 'shots',
+       ISNULL(penalties.penalty, 0) as 'penalties',
+       ISNULL(assists.gameID, ISNULL(goals.gameID, ISNULL(shots.gameID, penalties.gameID))) as 'gameID'
+from
+    (
+        select lf.playerID,
+               s.gameType,
+               lf.gameID,
+               s.seasonID,
+               count(*) as 'assists',
+               lf.teamID
+        from live_feed_temp lf
+        inner join schedules s on s.gameID = lf.gameID
+        where lf.eventTypeID = 'GOAL' and
+              lf.playerType = 'Assist' and
+              s.gameType = 'R'
+        group by lf.playerID, lf.gameID, s.gameType, s.seasonID, lf.teamID
+     ) assists
+full outer join
+    (
+        select lf.playerID,
+               s.gameType,
+               lf.gameID,
+               s.seasonID,
+               count(*)  as 'goals',
+               lf.teamID
+        from live_feed_temp lf
+        inner join schedules s on s.gameID = lf.gameID
+        where lf.eventTypeID = 'GOAL' and
+              lf.playerType = 'Scorer' and
+              s.gameType = 'R'
+        group by lf.playerID, lf.gameID, s.gameType, s.seasonID, lf.teamID
+    ) goals on assists.playerID = goals.playerID and
+               assists.seasonID = goals.seasonID and
+               assists.teamID = goals.seasonID and
+               assists.gameID = goals.gameID
+full outer join
+    (
+        select lf.playerID,
+            s.gameType,
+            lf.gameID,
+            s.seasonID,
+            count(*) as 'shots',
+            lf.teamID
+        from live_feed_temp lf
+        inner join schedules s on lf.gameID = s.gameID
+        where lf.eventTypeID = 'SHOT' and
+              lf.playerType = 'Shooter' and
+              s.gameType = 'R'
+        group by lf.playerID, lf.gameID, s.gameType, s.seasonID, lf.teamID
+    ) shots on goals.playerID = shots.playerID and
+               goals.seasonID = shots.seasonID and
+               goals.teamID = shots.seasonID and
+               goals.gameID = shots.gameID
+full outer join
+    (
+        select lf.playerID,
+               s.gameType,
+               lf.gameID,
+               s.seasonID,
+               count(*) as 'penalty',
+               lf.teamID
+        from live_feed_temp lf
+        inner join schedules s on lf.gameID = s.gameID
+        where lf.eventTypeID = 'PENALTY' and
+              lf.playerType = 'PenaltyOn' and
+              s.gameType = 'R'
+        group by lf.playerID, lf.gameID, s.gameType, s.seasonID, lf.teamID
+    ) penalties on assists.playerID = penalties.playerID and
+                   assists.seasonID = penalties.seasonID and
+                   assists.teamID = penalties.seasonID and
+                   assists.gameID = penalties.gameID ) p
+group by playerID
+order by sum(goals) desc
 
-select lf.*, t.teamName
-from live_feed_temp lf
-inner join teams t
-    on lf.teamID = t.teamID
-where lf.eventTypeID='SHOT'
 
 
 
-select distinct lf.gameID,lf.playerID, lf.teamID,t.teamName
-from live_feed_temp lf
-inner join teams t
-    on lf.teamID = t.teamID
-where (eventTypeID = 'FACEOFF' and playerType = 'Winner') or
-      (eventTypeID = 'HIT' and playerType = 'HITTER') or
-      (eventTypeID = 'PENALTY' and playerType = 'PenaltyOn') or
-      (eventTypeID = 'GOAL' and (playerType = ' Scorer' or playerType = 'Assist')) or
-      (eventTypeID = 'SHOT' and playerType = 'Shooter') or
-      (eventTypeID = 'GIVEAWAY' and playerType = 'PlayerID') or
-      (eventTypeID = 'MISSED_SHOT' and playerType = 'MIssed Shot') or
-      (eventTypeID = 'Takeaway' and playerType='PlayerID')
+
 
 
 

@@ -117,6 +117,8 @@ create table script_execution (
     primary key (script, date)
 );
 
+
+
 create table players (
     playerID int,
     firstName varchar(255),
@@ -129,6 +131,7 @@ create table players (
     shootsCatches char(1),
     primary key (playerID)
 );
+
 
 create table roster_status (
     playerID int,
@@ -180,14 +183,6 @@ create table alternate_captain(
     foreign key (playerID) references players (playerID)
 );
 
-create table plays_for (
-    playerID int,
-    teamID int,
-    date datetime,
-    primary key (playerID,teamID, date),
-    foreign key (playerID) references players (playerID),
-    foreign key (teamID) references teams (teamID)
-);
 
 create table positions (
 	primaryPositionCode varchar(20),
@@ -205,27 +200,16 @@ create table plays_position (
 	foreign key (primaryPositionCode) references positions(primaryPositionCode)
 );
 
+-- create table plays_for (
+--     playerID int,
+--     teamID int,
+--     date datetime,
+--     primary key (playerID,teamID, date),
+--     foreign key (playerID) references players (playerID),
+--     foreign key (teamID) references teams (teamID)
+-- );
 
-create table live_feed_temp (
-    eventID int,
-    eventSubID int,
-    gameID int,
-    event varchar(255),
-    eventCode varchar(255),
-    eventTypeID varchar(255),
-    eventDescription varchar(255),
-    secondaryType varchar(255),
-    periodNum varchar(255),
-    periodTime time,
-    playerID int,
-    playerType varchar(255),
-    xCoordinate decimal,
-    yCoordinate decimal,
-    teamID int,
-    primary key (gameID, eventID, eventSubID),
-    foreign key (gameID) references schedules(gameID),
-    foreign key (teamID) references teams (teamID)
-);
+
 
 
 create table prospects (
@@ -267,7 +251,26 @@ create table draftsPicks (
     constraint draftPickFKProspects foreign key (prospectID) references prospects (prospectID)
 );
 
-
+-- create table live_feed_temp (
+--     eventID int,
+--     eventSubID int,
+--     gameID int,
+--     event varchar(255),
+--     eventCode varchar(255),
+--     eventTypeID varchar(255),
+--     eventDescription varchar(255),
+--     secondaryType varchar(255),
+--     periodNum varchar(255),
+--     periodTime time,
+--     playerID int,
+--     playerType varchar(255),
+--     xCoordinate decimal,
+--     yCoordinate decimal,
+--     teamID int,
+--     primary key (gameID, eventID, eventSubID),
+--     foreign key (gameID) references schedules(gameID),
+--     foreign key (teamID) references teams (teamID)
+-- );
 
 
 

@@ -3,6 +3,7 @@ from SQLCode import DatabaseConnection
 from SQLCode import DatabaseCredentials as DBC
 import pandas as pd
 from DataGenerators.get_time import get_time
+import pyodbc
 
 
 def get_new_players():
@@ -18,6 +19,7 @@ def get_new_players():
         playerID = playerID.values[0]
         get_player(connection, playerID)
         get_other_player_info(connection, playerID, f"\'{get_time()}\'")
+
 
     conn.close()
 
@@ -49,12 +51,16 @@ def get_player(connection, playerID):
         return
 
     try:
-        firstName = f"\'{player['firstName']}\'"
+        firstName = f"{player['firstName']}"
+        firstName = firstName.replace("\'", " ")
+        firstName = "\'" + firstName + "\'"
     except KeyError:
         firstName = 'NULL'
 
     try:
         lastName = f"\'{player['lastName']}\'"
+        lastName = lastName.replace("\'", " ")
+        lastName = "\'" + lastName + "\'"
     except KeyError:
         lastName = 'NULL'
 
@@ -64,17 +70,23 @@ def get_player(connection, playerID):
         birthDate = 'NULL'
 
     try:
-        birthCity = f"\'{player['birthCity']}\'"
+        birthCity = f"{player['birthCity']}"
+        birthCity = birthCity.replace("\'", " ")
+        birthCity = "\'" + birthCity + "\'"
     except KeyError:
         birthCity = 'NULL'
 
     try:
-        birthStateProvince = f"\'{player['birthStateProvince']}\'"
+        birthStateProvince = f"{player['birthStateProvince']}"
+        birthStateProvince = birthStateProvince.replace("\'", " ")
+        birthStateProvince = "\'" + birthStateProvince + "\'"
     except KeyError:
         birthStateProvince = 'NULL'
 
     try:
         birthCountry = f"\'{player['birthCountry']}\'"
+        birthCountry = birthCountry.replace("\'", " ")
+        birthCountry = "\'" + birthCountry + "\'"
     except KeyError:
         birthCountry = 'NULL'
 
@@ -89,11 +101,6 @@ def get_player(connection, playerID):
     except KeyError:
         shootsCatches = 'NULL'
 
-    try:
-        rosterStatus = f"\'{player['rosterStatus']}\'"
-    except KeyError:
-        rosterStatus = 'NULL'
-
     query = f"insert into players values (" \
             f"{playerID}," \
             f"{firstName}," \
@@ -103,11 +110,14 @@ def get_player(connection, playerID):
             f"{birthStateProvince}," \
             f"{birthCountry}," \
             f"{height}," \
-            f"{shootsCatches}," \
-            f"{rosterStatus})"
+            f"{shootsCatches})"
 
     cursor = connection.cursor()
-    cursor.execute(query)
+    try:
+        cursor.execute(query)
+    except pyodbc.ProgrammingError:
+        print(query)
+        return
     connection.commit()
 
 
@@ -123,8 +133,8 @@ def get_other_player_info(connection, playerID, date):
 
     get_weight(connection, playerID, date, player)
     get_active_players(connection, playerID, date, player)
-    # get_rookie(connection, playerID, date, player)
-    # get_current_team(connection, playerID, date, player)
+    # # get_rookie(connection, playerID, date, player)
+    # # get_current_team(connection, playerID, date, player)
     get_captain(connection, playerID, date, player)
     get_position(connection, playerID, date, player)
     get_alternate_captain(connection, playerID, date, player)
@@ -136,13 +146,16 @@ def get_roster_status(connection, playerID, date, player):
     try:
         rosterStatus = player['rosterStatus']
     except KeyError:
-        rosterStatus = 'NULL'
+        rosterStatus = 'N'
     query = f"insert into roster_status values (" \
             f"{playerID}," \
-            f"{rosterStatus}," \
+            f"\'{rosterStatus}\'," \
             f"{date})"
     cursor = connection.cursor()
-    cursor.execute(query)
+    try:
+        cursor.execute(query)
+    except pyodbc.ProgrammingError:
+        print(query)
     connection.commit()
 
 
@@ -219,7 +232,8 @@ def get_captain(connection, playerID, date, player):
         captain = player['captain']
     except KeyError:
         captain = 'NULL'
-    if captain:
+    # Dont simplify, if 'NULL' evaluates to true
+    if captain == True:
         captain = 1
     else:
         captain = 0
@@ -274,7 +288,8 @@ def get_alternate_captain(connection, playerID, date, player):
         alternateCaptain = player['alternateCaptain']
     except KeyError:
         alternateCaptain = 'NULL'
-    if alternateCaptain:
+    # Dont simplify, if 'NULL' evaluates to true
+    if alternateCaptain == True:
         alternateCaptain = 1
     else:
         alternateCaptain = 0
