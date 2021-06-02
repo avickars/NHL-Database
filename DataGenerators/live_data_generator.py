@@ -96,7 +96,7 @@ def get_live_data():
             try:
                 secondaryType = f"{event['result']['secondaryType']}"
                 secondaryType = secondaryType.replace("\'", " ")
-                secondaryType= "\'" + secondaryType + "\'"
+                secondaryType = "\'" + secondaryType + "\'"
             except KeyError:
                 secondaryType = 'NULL'
 
@@ -122,6 +122,16 @@ def get_live_data():
             except KeyError:
                 yCoordinate = 'NULL'
 
+            try:
+                penaltySeverity = event['results']['penaltySeverity']
+            except KeyError:
+                penaltySeverity = 'NULL'
+
+            try:
+                penaltyMinutes = event['results']['penaltyMinutes']
+            except KeyError:
+                penaltyMinutes = 'NULL'
+
             for i in range(0, len(playerID)):
                 query = f"insert into live_feed values (" \
                         f"{eventID}," \
@@ -138,31 +148,14 @@ def get_live_data():
                         f"\'{playerType[i]}\'," \
                         f"{xCoordinate}," \
                         f"{yCoordinate}," \
-                        f"{teamID})"
+                        f"{teamID}," \
+                        f"{penaltySeverity}," \
+                        f"{penaltyMinutes})"
                 try:
                     cursor.execute(query)
                     connection.commit()
                 except pyodbc.ProgrammingError:
                     print(query)
                     return -1
-                # try:
-                #     cursor.execute(query)
-                #     connection.commit()
-                # except pyodbc.IntegrityError:
-                #     # Getting the players
-                #     players = pd.read_sql_query(f"select playerID from players where playerID = {playerID[i]};",
-                #                                 connection)
-                #
-                #     # Testing if either player exists in the db, if no, we add them
-                #     if playerID[i] != 'NULL':
-                #         if playerID[i] not in players['playerID'].values:
-                #             get_player(connection, playerID[i])
-                #             get_other_player_info(connection, playerID[i], f"\'{get_time()}\'")
-                #     cursor.execute(query)
-                #     connection.commit()
-                #
-                # except pyodbc.ProgrammingError:
-                #     print(query)
-                #     return -1
 
     conn.close()

@@ -114,22 +114,19 @@ where lf.eventTypeID = 'PENALTY' and
       s.gameType = 'R'
 group by lf.playerID, lf.gameID, s.gameType, s.seasonID, lf.teamID
 
-select top 50 * from live_feed_temp where eventTypeID='PENALTY'
-
-
 
  -- Number of assists,goals and shots by player, game, season and team (for regular season)
-select sum(goals) ,playerID
-from (
-select ISNULL(assists.playerID, ISNULL(goals.playerID, ISNULL(shots.playerID, penalties.playerID))) as 'playerID',
-       ISNULL(assists.seasonID, ISNULL(goals.playerID, ISNULL(shots.playerID, penalties.playerID))) as 'seasonID',
-       ISNULL(assists.teamID, ISNULL(goals.teamID, ISNULL(shots.playerID, penalties.playerID))) as 'teamID',
+select ISNULL(assists.playerID, ISNULL(goals.playerID, ISNULL(shots.playerID, ISNULL(penalties.playerID, faceOffs.seasonID)))) as 'playerID',
+       ISNULL(assists.seasonID, ISNULL(goals.seasonID, ISNULL(shots.seasonID, ISNULL(penalties.seasonID, faceOffs.seasonID)))) as 'seasonID',
+       ISNULL(assists.teamID, ISNULL(goals.teamID, ISNULL(shots.teamID, ISNULL(penalties.teamID, faceOffs.teamID)))) as 'teamID',
        ISNULL(assists.assists, 0) as 'assists',
        ISNULL(goals.goals, 0) as 'goals',
        ISNULL(assists.assists, 0) + ISNULL(goals.goals, 0) as 'points',
        ISNULL(shots.shots, 0) as 'shots',
        ISNULL(penalties.penalty, 0) as 'penalties',
-       ISNULL(assists.gameID, ISNULL(goals.gameID, ISNULL(shots.gameID, penalties.gameID))) as 'gameID'
+       ISNULL(assists.gameID, ISNULL(goals.gameID, ISNULL(shots.gameID, ISNULL(penalties.gameID, faceOffs.seasonID)))) as 'gameID',
+       ISNULL(faceOffs.numWins, 0) as 'numFaceOffWins',
+       ISNULL(faceOffs.numLosses, 0) as 'numFaceOffLosses'
 from
     (
         select lf.playerID,
@@ -198,9 +195,58 @@ full outer join
     ) penalties on assists.playerID = penalties.playerID and
                    assists.seasonID = penalties.seasonID and
                    assists.teamID = penalties.seasonID and
-                   assists.gameID = penalties.gameID ) p
-group by playerID
-order by sum(goals) desc
+                   assists.gameID = penalties.gameID
+full outer join
+    (
+        -- Number of faceOff wins, losses, percentage by player, Game and season.   Note we pivot it so the number of wins/losses are in the same row (need for percentage)
+        select seasonID,
+               gameID,
+               teamID,
+               playerID,
+               isnull(Loser, 0) as 'numLosses',
+               isnull(Winner, 0) as 'numWins'
+               --     cast(sum(p.numWins) as float)/(cast(sum(p.numLosses) as float) + cast(sum(p.numWins) as float)) as 'faceOffPercentage'
+        from
+             (
+                 -- Number of face-off wins/losses by player, and game, and team
+                 select s.seasonID,
+                        s.gameID,
+                        IIF(lf.playerType = 'Winner', lf.teamID, IIF(lf.teamID = s.homeTeamID, s.awayTeamID, s.homeTeamID)) as 'teamID',
+                        lf.playerID,
+                        lf.playerType,
+                        lf.numEvents
+                 from
+                      (
+                          select teamID,
+                                 gameID,
+                                 playerType,
+                                 playerID,
+                                 count(playerType) as 'numEvents'
+                          from live_feed_temp
+                          where eventTypeID = 'FACEOFF'
+                          group by playerType, playerID, gameID,teamID
+                     ) lf
+                 inner join schedules s on lf.gameID = s.gameID
+             ) as sourceTable
+        pivot
+             (
+                sum(numEvents) for playerType in ("Loser", "Winner")
+             ) as pivotTable
+    ) as faceOffs on assists.playerID = faceOffs.playerID and
+                     assists.seasonID = faceOffs.seasonID and
+                     assists.teamID = faceOffs.teamID and
+                     assists.gameID = faceOffs.gameID
+
+
+select * from live_feed_temp where eventTypeID = 'GOAL'
+
+
+
+
+
+
+
+
 
 
 
