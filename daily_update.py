@@ -5,12 +5,12 @@ from DataGenerators.players_generator import get_new_players
 
 
 def main():
-    get_daily_schedule()
-    record_script_execution('get_daily_schedule')
+    # get_daily_schedule()
+    # record_script_execution('get_daily_schedule')
     get_live_data()
-    record_script_execution('get_live_data')
-    get_new_players()
-    record_script_execution('get_new_players')
+    # record_script_execution('get_live_data')
+    # get_new_players()
+    # record_script_execution('get_new_players')
 
 
 if __name__ == '__main__':

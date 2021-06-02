@@ -125,7 +125,7 @@ def get_live_data():
                 yCoordinate = 'NULL'
 
             try:
-                penaltySeverity = event['result']['penaltySeverity']
+                penaltySeverity = f"\'{event['result']['penaltySeverity']}\'"
             except KeyError:
                 penaltySeverity = 'NULL'
 

@@ -262,5 +262,3 @@ create table live_feed (
     foreign key (teamID) references teams (teamID)
 );
 
-
-
