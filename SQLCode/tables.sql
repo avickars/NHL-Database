@@ -255,6 +255,8 @@ create table live_feed (
     xCoordinate decimal,
     yCoordinate decimal,
     teamID int,
+    penaltySeverity varchar(255),
+    penaltyMinutes int,
     primary key (gameID, eventID, eventSubID),
     foreign key (gameID) references schedules(gameID),
     foreign key (teamID) references teams (teamID)

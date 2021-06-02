@@ -9,6 +9,8 @@ import pyodbc
 from DataGenerators.players_generator import *
 
 
+
+
 def get_live_data():
     # Opening connection
     creds = DBC.DataBaseCredentials()
@@ -123,12 +125,12 @@ def get_live_data():
                 yCoordinate = 'NULL'
 
             try:
-                penaltySeverity = event['results']['penaltySeverity']
+                penaltySeverity = event['result']['penaltySeverity']
             except KeyError:
                 penaltySeverity = 'NULL'
 
             try:
-                penaltyMinutes = event['results']['penaltyMinutes']
+                penaltyMinutes = event['result']['penaltyMinutes']
             except KeyError:
                 penaltyMinutes = 'NULL'
 
