@@ -239,7 +239,7 @@ create table draftsPicks (
     constraint draftPickFKProspects foreign key (prospectID) references prospects (prospectID)
 );
 
-create table live_feed (
+create table live_feed_(
     eventID int,
     eventSubID int,
     gameID int,
@@ -261,4 +261,3 @@ create table live_feed (
     foreign key (gameID) references schedules(gameID),
     foreign key (teamID) references teams (teamID)
 );
-

@@ -9,8 +9,6 @@ import pyodbc
 from DataGenerators.players_generator import *
 
 
-
-
 def get_live_data():
     # Opening connection
     creds = DBC.DataBaseCredentials()

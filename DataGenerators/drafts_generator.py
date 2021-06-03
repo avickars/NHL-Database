@@ -16,7 +16,7 @@ def get_drafts():
     cursor = connection.cursor()
 
     # Getting the most recent run
-    mostRecentRun = pd.read_sql_query("select top 1 date from script_execution where script = 'get_live_data' order by date desc",
+    mostRecentRun = pd.read_sql_query("select top 1 date from script_execution where script = 'get_drafts' order by date desc",
                                       connection)
 
     # If we've never run it before, we start from the beginning

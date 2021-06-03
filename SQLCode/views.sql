@@ -237,8 +237,149 @@ full outer join
                      assists.teamID = faceOffs.teamID and
                      assists.gameID = faceOffs.gameID
 
+select *
+from live_feed_temp
+where eventTypeID = 'GOAL'
 
-select * from live_feed_temp where eventTypeID = 'GOAL'
+
+select gameID, eventDescription, secondaryType, periodNum, periodTime, playerID,
+from
+     (
+         select *,
+                ROW_NUMBER() over (partition by gameID, eventID order by eventSubID desc) as rowNum
+         from live_feed_temp
+         where eventTypeID = 'PENALTY'
+     ) penaltyOrdered
+where rowNum = 1
+
+
+select *,
+       IIF(
+                   dbo.is_time_greater(goalTimeMinutesElapsed,
+                                       goalTimeSecondsElapsed,
+                                       PenaltyStartMinutesElapsed,
+                                       penaltyStartSecondsElapsed)=1
+                   and
+                   dbo.is_time_less(goalTimeMinutesElapsed,
+                                    goalTimeSecondsElapsed,
+                                    PenaltyEndMinutesElapsed,
+                                    penaltyEndSecondsElapsed)=1
+           ,'specialTeam','regulard')
+from
+     (
+         select gameID,
+                eventID,
+                playerID,
+                teamID as 'scoringTeam',
+                dbo.get_minutes_elapsed(periodTime, periodNum) as 'goalTimeMinutesElapsed',
+                dbo.get_seconds_elapsed(periodTime) as 'goalTimeSecondsElapsed'
+         from live_feed_temp
+         where eventTypeID='GOAL' and
+               playerType='Scorer'
+     ) goals
+inner join
+     (
+         select lf.gameID,
+                lf.teamID as 'penaltyOnTeamID',
+                dbo.get_minutes_elapsed(lf.periodTime, lf.periodNum) as 'PenaltyStartMinutesElapsed',
+                dbo.get_seconds_elapsed(lf.periodTime) as 'penaltyStartSecondsElapsed',
+                dbo.get_minutes_elapsed(lf.periodTime, lf.periodNum) + lf.penaltyMinutes as 'PenaltyEndMinutesElapsed',
+                dbo.get_seconds_elapsed(lf.periodTime) as 'penaltyEndSecondsElapsed'
+         from live_feed_temp lf
+         inner join schedules s on s.gameID = lf.gameID
+         where eventTypeID = 'PENALTY' and
+               playerType='PenaltyOn'
+     ) penalties on penalties.gameID = goals.gameID
+where goals.gameID = 2019020001 and eventID=610
+
+
+      select lf.gameID,
+                lf.teamID as 'penaltyOnTeamID',
+                dbo.get_minutes_elapsed(lf.periodTime, lf.periodNum) as 'PenaltyStartMinutesElapsed',
+                dbo.get_seconds_elapsed(lf.periodTime) as 'penaltyStartSecondsElapsed',
+                dbo.get_minutes_elapsed(lf.periodTime, lf.periodNum) + lf.penaltyMinutes as 'PenaltyEndMinutesElapsed',
+                dbo.get_seconds_elapsed(lf.periodTime) as 'penaltyEndSecondsElapsed'
+         from live_feed_temp lf
+         inner join schedules s on s.gameID = lf.gameID
+         where eventTypeID = 'PENALTY' and
+               playerType='PenaltyOn' and lf.gameID=2019020001
+
+
+  select gameID,
+                eventID,
+                playerID,
+                teamID as 'scoringTeam',
+                dbo.get_minutes_elapsed(periodTime, periodNum) as 'goalTimeMinutesElapsed',
+                dbo.get_seconds_elapsed(periodTime) as 'goalTimeSecondsElapsed'
+         from live_feed_temp
+         where eventTypeID='GOAL' and
+               playerType='Scorer' and gameID = 2019020001
+
+
+-- where IIF
+--            (
+--            (goals.goalTimeMinutesElapsed >= penalties.PenaltyStartMinutesElapsed and goals.goalTimeSecondsElapsed >= penalties.penaltyStartSecondsElapsed) and -- The goal is scored after or on the penalty call
+--            (goals.goalTimeMinutesElapsed <= penalties.PenaltyEndMinutesElapsed and goals.goalTimeSecondsElapsed <= penalties.penaltyEndSecondsElapsed), -- the goal is scored before or on the penalty end
+--            'specialTeam',
+--            'regularGoal'
+--            )='specialTeam' and goals.gameID = 2019020001
+
+
+
+create function is_time_greater (
+    @greaterMinutesElapsed int,
+    @greaterSecondsElapsed int,
+    @lessMinutesElapsed int,
+    @lessSecondsElapsed int
+)
+returns bit
+as
+    begin
+        return IIF(@greaterMinutesElapsed = @lessMinutesElapsed and @greaterSecondsElapsed >= @lessSecondsElapsed, 1,
+                    IIF(@greaterMinutesElapsed > @lessMinutesElapsed,1,0))
+    end
+
+create function is_time_less (
+    @lessMinutesElapsed int,
+    @lessSecondsElapsed int,
+    @greaterMinutesElapsed int,
+    @greaterSecondsElapsed int
+)
+returns bit
+as
+    begin
+        return IIF(@lessMinutesElapsed = @greaterMinutesElapsed and @lessSecondsElapsed <= @greaterSecondsElapsed, 1,
+                    IIF(@lessMinutesElapsed < @greaterMinutesElapsed, 1, 0))
+    end
+
+
+-- returns the number of minutes that have elapsed in the game
+create function get_minutes_elapsed(
+    @periodTime time,
+    @periodNum int
+)
+returns int
+as
+    begin
+        return ((@periodNum-1)*20) + IIF(datepart(minute,@periodTime) = 0, 20 - datepart(hour,@periodTime), 20 - datepart(hour,@periodTime) - 1)
+    end
+
+select dbo.get_minutes_elapsed('14:50:00',2) as x;
+
+-- returns the number of seconds that has elapsed in the given minute
+create function get_seconds_elapsed (
+    @periodTime time
+)
+returns int
+as
+    begin
+        return 60 - datepart(minute , @periodTime)
+    end
+
+
+
+
+
 
 
 
