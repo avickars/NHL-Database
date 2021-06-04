@@ -101,32 +101,37 @@ union
 where r2.rowNum=1
 
 
-select lf.playerID,
-        s.gameType,
-        lf.gameID,
-        s.seasonID,
-        count(*) as 'penalty',
-        lf.teamID
-from live_feed_temp lf
-inner join schedules s on lf.gameID = s.gameID
-where lf.eventTypeID = 'PENALTY' and
-      lf.playerType = 'PenaltyOn' and
-      s.gameType = 'R'
-group by lf.playerID, lf.gameID, s.gameType, s.seasonID, lf.teamID
 
 
  -- Number of assists,goals and shots by player, game, season and team (for regular season)
-select ISNULL(assists.playerID, ISNULL(goals.playerID, ISNULL(shots.playerID, ISNULL(penalties.playerID, faceOffs.seasonID)))) as 'playerID',
-       ISNULL(assists.seasonID, ISNULL(goals.seasonID, ISNULL(shots.seasonID, ISNULL(penalties.seasonID, faceOffs.seasonID)))) as 'seasonID',
-       ISNULL(assists.teamID, ISNULL(goals.teamID, ISNULL(shots.teamID, ISNULL(penalties.teamID, faceOffs.teamID)))) as 'teamID',
-       ISNULL(assists.assists, 0) as 'assists',
-       ISNULL(goals.goals, 0) as 'goals',
-       ISNULL(assists.assists, 0) + ISNULL(goals.goals, 0) as 'points',
-       ISNULL(shots.shots, 0) as 'shots',
-       ISNULL(penalties.penalty, 0) as 'penalties',
-       ISNULL(assists.gameID, ISNULL(goals.gameID, ISNULL(shots.gameID, ISNULL(penalties.gameID, faceOffs.seasonID)))) as 'gameID',
-       ISNULL(faceOffs.numWins, 0) as 'numFaceOffWins',
-       ISNULL(faceOffs.numLosses, 0) as 'numFaceOffLosses'
+drop view if exists game_sheet;
+create view game_sheet as
+select COALESCE(assists.seasonID, goals.seasonID, shots.seasonID, penalties.seasonID, faceOffs.seasonID, specialGoals.seasonID, specialAssists.seasonID, overTimeGoals.seasonID, overTimeAssists.seasonID, 'N/A') as 'seasonID',
+       COALESCE(assists.gameID, goals.gameID, shots.gameID, penalties.gameID, faceOffs.gameID, specialGoals.gameID, specialAssists.gameID, overTimeGoals.gameID, overTimeAssists.gameID, 'N/A') as 'gameID',
+       COALESCE(assists.teamID, goals.teamID, shots.teamID, penalties.teamID, faceOffs.teamID, specialGoals.teamID, specialAssists.teamID, overTimeGoals.teamID, overTimeAssists.teamID, 'N/A') as 'teamID',
+       COALESCE(assists.playerID, goals.playerID, shots.playerID, penalties.playerID, faceOffs.playerID, specialGoals.playerID, specialAssists.playerID, overTimeGoals.playerID, overTimeAssists.playerID, 'N/A') as 'playerID',
+       ISNULL(goals.goals, 0) as 'G', -- goals
+       ISNULL(assists.assists, 0) as 'A', -- assists
+       ISNULL(assists.assists, 0) + ISNULL(goals.goals, 0) as 'P', -- points
+       ISNULL(shots.shots, 0) as 'S', -- num shots
+       CONVERT(float, ISNULL(goals.goals, 0)) / NULLIF((CONVERT(float, ISNULL(shots.shots, 0)) + CONVERT(float, ISNULL(goals.goals, 0))),0) as 'S%', -- shooting percentage
+       ISNULL(penalties.PIM, 0) as 'PIM', -- penalty minutes
+       ISNULL(faceOffs.numWins, 0) as 'FOW', -- face off wins
+       ISNULL(faceOffs.numLosses, 0) as 'FOL', -- face off losses
+       CONVERT(float, ISNULL(faceOffs.numWins, 0))/NULLIF((CONVERT(float, ISNULL(faceOffs.numWins, 0)) + CONVERT(float, ISNULL(faceOffs.numLosses, 0))),0) as 'FO%', -- face off winning percentage
+       COALESCE(assists.gameType, goals.gameType, shots.gameType, penalties.gameType, faceOffs.gameType, specialGoals.gameType, specialAssists.gameType, overTimeGoals.gameType, overTimeAssists.gameType, 'N/A') as 'gameType',
+       ISNULL(specialGoals.PPG, 0) as 'PPG', -- powerplay goal
+       ISNULL(specialAssists.PPA, 0) as 'PPA', -- powerplay assist
+       ISNULL(specialGoals.PPG, 0) + ISNULL(specialAssists.PPA, 0) as 'PPP', -- powerplay points
+       ISNULL(specialGoals.ESG, 0) as 'ESG', -- even strength goal
+       ISNULL(specialAssists.ESA, 0) as 'ESA', -- even strength assist
+       ISNULL(specialGoals.ESG, 0) + ISNULL(specialAssists.ESA, 0) as 'EVP', --- even strength points
+       ISNULL(specialGoals.SHG, 0) as 'SHG', -- short handed goal
+       ISNULL(specialAssists.SHA, 0) as 'SHA', -- short handed assist
+       ISNULL(specialGoals.SHG, 0) + ISNULL(specialAssists.SHA, 0) as 'SHP', --shorthanded points
+       ISNULL(overTimeGoals.OTG, 0) as 'OTG', -- over time goals
+       ISNULL(overTimeAssists.OTA, 0) as 'OTA', -- over time assists
+       ISNULL(overTimeGoals.OTG, 0)  + ISNULL(overTimeAssists.OTA, 0) as 'OTP' -- over time points
 from
     (
         select lf.playerID,
@@ -138,8 +143,7 @@ from
         from live_feed_temp lf
         inner join schedules s on s.gameID = lf.gameID
         where lf.eventTypeID = 'GOAL' and
-              lf.playerType = 'Assist' and
-              s.gameType = 'R'
+              lf.playerType = 'Assist'
         group by lf.playerID, lf.gameID, s.gameType, s.seasonID, lf.teamID
      ) assists
 full outer join
@@ -153,12 +157,11 @@ full outer join
         from live_feed_temp lf
         inner join schedules s on s.gameID = lf.gameID
         where lf.eventTypeID = 'GOAL' and
-              lf.playerType = 'Scorer' and
-              s.gameType = 'R'
+              lf.playerType = 'Scorer'
         group by lf.playerID, lf.gameID, s.gameType, s.seasonID, lf.teamID
     ) goals on assists.playerID = goals.playerID and
                assists.seasonID = goals.seasonID and
-               assists.teamID = goals.seasonID and
+               assists.teamID = goals.teamID and
                assists.gameID = goals.gameID
 full outer join
     (
@@ -171,12 +174,11 @@ full outer join
         from live_feed_temp lf
         inner join schedules s on lf.gameID = s.gameID
         where lf.eventTypeID = 'SHOT' and
-              lf.playerType = 'Shooter' and
-              s.gameType = 'R'
+              lf.playerType = 'Shooter'
         group by lf.playerID, lf.gameID, s.gameType, s.seasonID, lf.teamID
     ) shots on goals.playerID = shots.playerID and
                goals.seasonID = shots.seasonID and
-               goals.teamID = shots.seasonID and
+               goals.teamID = shots.teamID and
                goals.gameID = shots.gameID
 full outer join
     (
@@ -184,18 +186,17 @@ full outer join
                s.gameType,
                lf.gameID,
                s.seasonID,
-               count(*) as 'penalty',
+               sum(penaltyMinutes) as 'PIM',
                lf.teamID
         from live_feed_temp lf
         inner join schedules s on lf.gameID = s.gameID
         where lf.eventTypeID = 'PENALTY' and
-              lf.playerType = 'PenaltyOn' and
-              s.gameType = 'R'
+              lf.playerType = 'PenaltyOn'
         group by lf.playerID, lf.gameID, s.gameType, s.seasonID, lf.teamID
-    ) penalties on assists.playerID = penalties.playerID and
-                   assists.seasonID = penalties.seasonID and
-                   assists.teamID = penalties.seasonID and
-                   assists.gameID = penalties.gameID
+    ) penalties on shots.playerID = penalties.playerID and
+                   shots.seasonID = penalties.seasonID and
+                   shots.teamID = penalties.teamID and
+                   shots.gameID = penalties.gameID
 full outer join
     (
         -- Number of faceOff wins, losses, percentage by player, Game and season.   Note we pivot it so the number of wins/losses are in the same row (need for percentage)
@@ -203,6 +204,7 @@ full outer join
                gameID,
                teamID,
                playerID,
+               gameType,
                isnull(Loser, 0) as 'numLosses',
                isnull(Winner, 0) as 'numWins'
                --     cast(sum(p.numWins) as float)/(cast(sum(p.numLosses) as float) + cast(sum(p.numWins) as float)) as 'faceOffPercentage'
@@ -214,7 +216,8 @@ full outer join
                         IIF(lf.playerType = 'Winner', lf.teamID, IIF(lf.teamID = s.homeTeamID, s.awayTeamID, s.homeTeamID)) as 'teamID',
                         lf.playerID,
                         lf.playerType,
-                        lf.numEvents
+                        lf.numEvents,
+                        s.gameType
                  from
                       (
                           select teamID,
@@ -232,100 +235,179 @@ full outer join
              (
                 sum(numEvents) for playerType in ("Loser", "Winner")
              ) as pivotTable
-    ) as faceOffs on assists.playerID = faceOffs.playerID and
-                     assists.seasonID = faceOffs.seasonID and
-                     assists.teamID = faceOffs.teamID and
-                     assists.gameID = faceOffs.gameID
+    ) as faceOffs on penalties.playerID = faceOffs.playerID and
+                     penalties.seasonID = faceOffs.seasonID and
+                     penalties.teamID = faceOffs.teamID and
+                     penalties.gameID = faceOffs.gameID
+full outer join
+    (
+        select playerID,
+               gameType,
+               gameID,
+               seasonID,
+               teamID,
+               ISNULL(EVEN, 0) as 'ESG',
+               ISNULL(PPG, 0) as 'PPG',
+               ISNULL(SSH, 0) as 'SHG'
+        from
+             (
+                 select lf.playerID,
+                        s.gameType,
+                        lf.gameID,
+                        s.seasonID,
+                        count(*) as 'goals',
+                        lf.teamID,
+                        lf.strength
+                 from live_feed_temp lf
+                 inner join schedules s on s.gameID = lf.gameID
+                 where lf.eventTypeID = 'GOAL' and
+                       lf.playerType = 'Scorer'
+                 group by lf.playerID, lf.gameID, s.gameType, s.seasonID, lf.teamID, lf.strength
+             ) as sourceTable
+        pivot
+             (
+                 sum(goals) for strength in ("EVEN", "PPG","SSH")
+             ) as pivotTable
 
-select *
-from live_feed_temp
-where eventTypeID = 'GOAL'
+    ) as specialGoals on specialGoals.playerID = faceOffs.playerID and
+                           specialGoals.seasonID = faceOffs.seasonID and
+                           specialGoals.teamID = faceOffs.teamID and
+                           specialGoals.gameID = faceOffs.gameID
+full outer join
+    (
+        select playerID,
+               gameType,
+               gameID,
+               seasonID,
+               teamID,
+               ISNULL(EVEN, 0) as 'ESA',
+               ISNULL(PPG, 0) as 'PPA',
+               ISNULL(SSH, 0) as 'SHA'
+        from
+             (
+                 select lf.playerID,
+                        s.gameType,
+                        lf.gameID,
+                        s.seasonID,
+                        count(*) as 'assists',
+                        lf.teamID,
+                        lf.strength
+                 from live_feed_temp lf
+                 inner join schedules s on s.gameID = lf.gameID
+                 where lf.eventTypeID = 'GOAL' and
+                       lf.playerType = 'Assist'
+                 group by lf.playerID, lf.gameID, s.gameType, s.seasonID, lf.teamID, lf.strength
+             ) as sourceTable
+        pivot
+             (
+                 sum(assists) for strength in ("EVEN", "PPG","SSH")
+             ) as pivotTable
+        ) as specialAssists on specialAssists.playerID = specialGoals.playerID and
+                               specialAssists.seasonID = specialGoals.seasonID and
+                               specialAssists.teamID = specialGoals.teamID and
+                               specialAssists.gameID = specialGoals.gameID
+full outer join
+    (
+        -- getting playoff overtime goals
+        select lf.playerID,
+                       s.gameType,
+                       lf.gameID,
+                       s.seasonID,
+                       count(*)  as 'OTG',
+                       lf.teamID
+                from live_feed_temp lf
+                inner join schedules s on s.gameID = lf.gameID
+                where lf.eventTypeID = 'GOAL' and
+                      lf.playerType = 'Scorer' and
+                      lf.periodNum > 3 and gameType='P'
+                group by lf.playerID, lf.gameID, s.gameType, s.seasonID, lf.teamID, periodNum
+        union
+        -- Getting regular and preseason season overtime goals
+        select lf.playerID,
+                       s.gameType,
+                       lf.gameID,
+                       s.seasonID,
+                       count(*)  as 'OTG',
+                       lf.teamID
+                from live_feed_temp lf
+                inner join schedules s on s.gameID = lf.gameID
+                where lf.eventTypeID = 'GOAL' and
+                      lf.playerType = 'Scorer' and
+                      lf.periodNum = 4 and (gameType='R' or gameType = 'PR')
+                group by lf.playerID, lf.gameID, s.gameType, s.seasonID, lf.teamID, periodNum
+    ) as overTimeGoals on overTimeGoals.playerID = specialAssists.playerID and
+                          overTimeGoals.seasonID = specialAssists.seasonID and
+                          overTimeGoals.teamID = specialAssists.teamID and
+                          overTimeGoals.gameID = specialAssists.gameID
+full outer join
+    (
+        -- getting playoff overtime goals
+        select lf.playerID,
+                       s.gameType,
+                       lf.gameID,
+                       s.seasonID,
+                       count(*)  as 'OTA',
+                       lf.teamID
+                from live_feed_temp lf
+                inner join schedules s on s.gameID = lf.gameID
+                where lf.eventTypeID = 'GOAL' and
+                      lf.playerType = 'Assist' and
+                      lf.periodNum > 3 and gameType='P'
+                group by lf.playerID, lf.gameID, s.gameType, s.seasonID, lf.teamID, periodNum
+        union
+        -- Getting regular and preseason season overtime goals
+        select lf.playerID,
+                       s.gameType,
+                       lf.gameID,
+                       s.seasonID,
+                       count(*)  as 'OTA',
+                       lf.teamID
+                from live_feed_temp lf
+                inner join schedules s on s.gameID = lf.gameID
+                where lf.eventTypeID = 'GOAL' and
+                      lf.playerType = 'Assist' and
+                      lf.periodNum = 4 and (gameType='R' or gameType = 'PR')
+                group by lf.playerID, lf.gameID, s.gameType, s.seasonID, lf.teamID, periodNum
+    ) as overTimeAssists on overTimeAssists .playerID = overTimeGoals.playerID and
+                          overTimeAssists .seasonID = overTimeGoals.seasonID and
+                          overTimeAssists .teamID = overTimeGoals.teamID and
+                          overTimeAssists .gameID = overTimeGoals.gameID
 
 
-select gameID, eventDescription, secondaryType, periodNum, periodTime, playerID,
-from
-     (
-         select *,
-                ROW_NUMBER() over (partition by gameID, eventID order by eventSubID desc) as rowNum
-         from live_feed_temp
-         where eventTypeID = 'PENALTY'
-     ) penaltyOrdered
-where rowNum = 1
-
-
-select *,
-       IIF(
-                   dbo.is_time_greater(goalTimeMinutesElapsed,
-                                       goalTimeSecondsElapsed,
-                                       PenaltyStartMinutesElapsed,
-                                       penaltyStartSecondsElapsed)=1
-                   and
-                   dbo.is_time_less(goalTimeMinutesElapsed,
-                                    goalTimeSecondsElapsed,
-                                    PenaltyEndMinutesElapsed,
-                                    penaltyEndSecondsElapsed)=1
-           ,'specialTeam','regulard')
-from
-     (
-         select gameID,
-                eventID,
-                playerID,
-                teamID as 'scoringTeam',
-                dbo.get_minutes_elapsed(periodTime, periodNum) as 'goalTimeMinutesElapsed',
-                dbo.get_seconds_elapsed(periodTime) as 'goalTimeSecondsElapsed'
-         from live_feed_temp
-         where eventTypeID='GOAL' and
-               playerType='Scorer'
-     ) goals
-inner join
-     (
-         select lf.gameID,
-                lf.teamID as 'penaltyOnTeamID',
-                dbo.get_minutes_elapsed(lf.periodTime, lf.periodNum) as 'PenaltyStartMinutesElapsed',
-                dbo.get_seconds_elapsed(lf.periodTime) as 'penaltyStartSecondsElapsed',
-                dbo.get_minutes_elapsed(lf.periodTime, lf.periodNum) + lf.penaltyMinutes as 'PenaltyEndMinutesElapsed',
-                dbo.get_seconds_elapsed(lf.periodTime) as 'penaltyEndSecondsElapsed'
-         from live_feed_temp lf
-         inner join schedules s on s.gameID = lf.gameID
-         where eventTypeID = 'PENALTY' and
-               playerType='PenaltyOn'
-     ) penalties on penalties.gameID = goals.gameID
-where goals.gameID = 2019020001 and eventID=610
-
-
-      select lf.gameID,
-                lf.teamID as 'penaltyOnTeamID',
-                dbo.get_minutes_elapsed(lf.periodTime, lf.periodNum) as 'PenaltyStartMinutesElapsed',
-                dbo.get_seconds_elapsed(lf.periodTime) as 'penaltyStartSecondsElapsed',
-                dbo.get_minutes_elapsed(lf.periodTime, lf.periodNum) + lf.penaltyMinutes as 'PenaltyEndMinutesElapsed',
-                dbo.get_seconds_elapsed(lf.periodTime) as 'penaltyEndSecondsElapsed'
-         from live_feed_temp lf
-         inner join schedules s on s.gameID = lf.gameID
-         where eventTypeID = 'PENALTY' and
-               playerType='PenaltyOn' and lf.gameID=2019020001
-
-
-  select gameID,
-                eventID,
-                playerID,
-                teamID as 'scoringTeam',
-                dbo.get_minutes_elapsed(periodTime, periodNum) as 'goalTimeMinutesElapsed',
-                dbo.get_seconds_elapsed(periodTime) as 'goalTimeSecondsElapsed'
-         from live_feed_temp
-         where eventTypeID='GOAL' and
-               playerType='Scorer' and gameID = 2019020001
-
-
--- where IIF
---            (
---            (goals.goalTimeMinutesElapsed >= penalties.PenaltyStartMinutesElapsed and goals.goalTimeSecondsElapsed >= penalties.penaltyStartSecondsElapsed) and -- The goal is scored after or on the penalty call
---            (goals.goalTimeMinutesElapsed <= penalties.PenaltyEndMinutesElapsed and goals.goalTimeSecondsElapsed <= penalties.penaltyEndSecondsElapsed), -- the goal is scored before or on the penalty end
---            'specialTeam',
---            'regularGoal'
---            )='specialTeam' and goals.gameID = 2019020001
 
 
 
+
+
+select * from live_feed_temp where eventTypeID = 'GOAL'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- tests if the time is greater
 create function is_time_greater (
     @greaterMinutesElapsed int,
     @greaterSecondsElapsed int,
@@ -339,6 +421,7 @@ as
                     IIF(@greaterMinutesElapsed > @lessMinutesElapsed,1,0))
     end
 
+-- tests if the time is less
 create function is_time_less (
     @lessMinutesElapsed int,
     @lessSecondsElapsed int,
@@ -351,33 +434,6 @@ as
         return IIF(@lessMinutesElapsed = @greaterMinutesElapsed and @lessSecondsElapsed <= @greaterSecondsElapsed, 1,
                     IIF(@lessMinutesElapsed < @greaterMinutesElapsed, 1, 0))
     end
-
-
--- returns the number of minutes that have elapsed in the game
-create function get_minutes_elapsed(
-    @periodTime time,
-    @periodNum int
-)
-returns int
-as
-    begin
-        return ((@periodNum-1)*20) + IIF(datepart(minute,@periodTime) = 0, 20 - datepart(hour,@periodTime), 20 - datepart(hour,@periodTime) - 1)
-    end
-
-select dbo.get_minutes_elapsed('14:50:00',2) as x;
-
--- returns the number of seconds that has elapsed in the given minute
-create function get_seconds_elapsed (
-    @periodTime time
-)
-returns int
-as
-    begin
-        return 60 - datepart(minute , @periodTime)
-    end
-
-
-
 
 
 

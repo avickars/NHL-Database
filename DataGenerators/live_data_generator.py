@@ -132,6 +132,31 @@ def get_live_data():
             except KeyError:
                 penaltyMinutes = 'NULL'
 
+            try:
+                strength = f"\'{event['result']['strength']['code']}\'"
+            except KeyError:
+                strength = 'NULL'
+
+            try:
+                gameWinningGoal = event['result']['gameWinningGoal']
+            except KeyError:
+                gameWinningGoal = 'NULL'
+            # Dont simplify, if 'NULL' evaluates to true
+            if gameWinningGoal == True:
+                gameWinningGoal = 1
+            else:
+                gameWinningGoal = 0
+
+            try:
+                emptyNetGoal = event['result']['emptyNet']
+            except KeyError:
+                emptyNetGoal = 'NULL'
+            # Dont simplify, if 'NULL' evaluates to true
+            if emptyNetGoal == True:
+                emptyNetGoal = 1
+            else:
+                emptyNetGoal = 0
+
             for i in range(0, len(playerID)):
                 query = f"insert into live_feed values (" \
                         f"{eventID}," \
@@ -150,7 +175,10 @@ def get_live_data():
                         f"{yCoordinate}," \
                         f"{teamID}," \
                         f"{penaltySeverity}," \
-                        f"{penaltyMinutes})"
+                        f"{penaltyMinutes}," \
+                        f"{strength}," \
+                        f"{gameWinningGoal}," \
+                        f"{emptyNetGoal})"
                 try:
                     cursor.execute(query)
                     connection.commit()

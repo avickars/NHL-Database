@@ -79,7 +79,7 @@ def get_drafts():
                 except KeyError:
                     fullName = 'NULL'
 
-                query = f'insert into draftsPicks values (' \
+                query = f'insert into draft_picks values (' \
                         f'{draftYear},' \
                         f'{pickRound},' \
                         f'{pickOverall},' \
@@ -87,11 +87,8 @@ def get_drafts():
                         f'{teamID},' \
                         f'{prospectID},' \
                         f'{fullName})'
-                try:
-                    cursor.execute(query)
-                except pyodbc.IntegrityError:
-                    updateProspectTable(prospectID, connection)
-                    cursor.execute(query)
+
+                cursor.execute(query)
 
                 connection.commit()
 
@@ -101,7 +98,23 @@ def get_drafts():
     conn.close()
 
 
-def updateProspectTable(pID, connection):
+def update_prospects():
+    # Opening connection
+    creds = DBC.DataBaseCredentials()
+    conn = DatabaseConnection.sql_connection(creds.server, creds.database, creds.user, creds.password)
+    connection = conn.open()
+
+    # Getting the current conferences
+    players = pd.read_sql_query("select distinct from draft_picks where playerID not in (select playerID from prospects)", connection)
+
+    for index, prospectID in players.iterrows():
+        prospectID = prospectID.values[0]
+        update_prospect_table(prospectID, connection)
+
+    conn.close()
+
+
+def update_prospect_table(pID, connection):
     url = requests.get(f"https://statsapi.web.nhl.com/api/v1/draft/prospects/{pID}")
     url_data = url.json()
     url_data = url_data['prospects']

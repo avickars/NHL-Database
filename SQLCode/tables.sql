@@ -226,7 +226,7 @@ create table prospectCategory (
 	constraint prospectCategoryPK primary key (prospectCategoryID)
 );
 
-create table draftsPicks (
+create table draft_picks (
     draftYear smallint not null ,
     round int not null ,
     pickOverall int not null ,
@@ -235,11 +235,10 @@ create table draftsPicks (
     prospectID int null ,
     fullName varchar(255) not null ,
     constraint draftsPicksPK primary key (draftYear,pickOverall),
-    constraint draftPickFKTeam foreign key (teamID) references teams(teamID),
-    constraint draftPickFKProspects foreign key (prospectID) references prospects (prospectID)
+    constraint draftPickFKTeam foreign key (teamID) references teams(teamID)
 );
 
-create table live_feed_(
+create table live_feed_temp(
     eventID int,
     eventSubID int,
     gameID int,
@@ -257,6 +256,9 @@ create table live_feed_(
     teamID int,
     penaltySeverity varchar(255),
     penaltyMinutes int,
+    strength varchar(255),
+    gameWinningGoal bit,
+    emptyNetGoal bit,
     primary key (gameID, eventID, eventSubID),
     foreign key (gameID) references schedules(gameID),
     foreign key (teamID) references teams (teamID)

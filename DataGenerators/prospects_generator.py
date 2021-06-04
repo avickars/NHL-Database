@@ -120,6 +120,7 @@ def get_prospects():
                 f"{birthDate}, " \
                 f"{birthCity}, " \
                 f"{birthStateProvince}, " \
+
                 f"{birthCountry}, " \
                 f"{height}, " \
                 f"{weight}," \
