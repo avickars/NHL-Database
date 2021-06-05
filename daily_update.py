@@ -2,6 +2,7 @@ from DataGenerators.schedule_updator import get_daily_schedule
 from DataGenerators.scipt_execution import record_script_execution
 from DataGenerators.live_data_generator import get_live_data
 from DataGenerators.players_generator import get_new_players
+from DataGenerators.boxscore_generator import get_boxscore
 
 
 def main():
@@ -9,8 +10,12 @@ def main():
     record_script_execution('get_daily_schedule')
     get_live_data()
     record_script_execution('get_live_data')
+    get_boxscore()
+    record_script_execution('get_boxscore')
     get_new_players()
     record_script_execution('get_new_players')
+
+
 
 
 if __name__ == '__main__':

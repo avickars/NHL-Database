@@ -200,6 +200,14 @@ create table plays_position (
 	foreign key (primaryPositionCode) references positions(primaryPositionCode)
 );
 
+create table rookies (
+    playerID int,
+    rookie bit,
+    date datetime,
+    primary key (playerID, date),
+    foreign key (playerID) references players (playerID)
+)
+
 create table prospects (
     prospectID int ,
     firstName varchar(255) not null,
@@ -220,11 +228,7 @@ create table prospects (
     constraint prospectPK primary key (prospectID)
 );
 
-create table prospectCategory (
-	prospectCategoryID int,
-    prospectCategoryName varchar(255),
-	constraint prospectCategoryPK primary key (prospectCategoryID)
-);
+
 
 create table draft_picks (
     draftYear smallint not null ,
@@ -238,7 +242,9 @@ create table draft_picks (
     constraint draftPickFKTeam foreign key (teamID) references teams(teamID)
 );
 
-create table live_feed_temp(
+insert into draft_picks values (2000,1,1,1,2,6226,"Rick Dipietro")
+
+create table live_feed(
     eventID int,
     eventSubID int,
     gameID int,
@@ -263,3 +269,28 @@ create table live_feed_temp(
     foreign key (gameID) references schedules(gameID),
     foreign key (teamID) references teams (teamID)
 );
+
+create table box_scores (
+    gameID int,
+    teamID int,
+    playerID int,
+    jerseyNumber int,
+    timeOnIce varchar(255),
+    plusMinus int,
+    evenTimeOnIce varchar(255),
+    powerPlayTimeOnIce varchar(255),
+    shortHandedTimeOnIce varchar(255),
+    unknown bit,
+    scratched bit,
+    primary key (gameID, teamID, playerID),
+    foreign key (gameID) references schedules (gameID),
+    foreign key (teamID) references teams (teamID)
+)
+
+create table head_shots (
+    playerID int,
+    headshot varchar(255),
+    date datetime,
+    primary key (playerID,date)
+)
+

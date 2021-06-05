@@ -6,6 +6,7 @@ from DataGenerators.get_time import get_time
 import datetime
 import numpy as np
 import pyodbc
+from dateutil.relativedelta import relativedelta
 
 
 def get_drafts():
@@ -75,7 +76,7 @@ def get_drafts():
 
                 try:
                     fullName = pick['prospect']['fullName'].replace('\'', '\"')
-                    fullName = f"\"{fullName}\""
+                    fullName = f"\'{fullName}\'"
                 except KeyError:
                     fullName = 'NULL'
 
@@ -87,13 +88,16 @@ def get_drafts():
                         f'{teamID},' \
                         f'{prospectID},' \
                         f'{fullName})'
-
-                cursor.execute(query)
-
-                connection.commit()
+                try:
+                    cursor.execute(query)
+                    connection.commit()
+                except pyodbc.ProgrammingError:
+                    print("Error")
+                    print(query)
+                    return -1
 
         # Incrementing the most recent run, since we have now updated the draft to include the year for mostRecentRun
-        mostRecentRun = mostRecentRun + datetime.timedelta(years=1)
+        mostRecentRun = mostRecentRun + relativedelta(years=1)
 
     conn.close()
 
@@ -105,7 +109,7 @@ def update_prospects():
     connection = conn.open()
 
     # Getting the current conferences
-    players = pd.read_sql_query("select distinct from draft_picks where playerID not in (select playerID from prospects)", connection)
+    players = pd.read_sql_query("select * from (select distinct prospectID from draft_picks where prospectID not in (select prospectID from prospects) ) P where ISNULL(P.prospectID,1) <> 1", connection)
 
     for index, prospectID in players.iterrows():
         prospectID = prospectID.values[0]
@@ -163,8 +167,8 @@ def update_prospect_table(pID, connection):
         birthCountry = 'NULL'
 
     try:
-        height = prospect['height'].replace('\"', '')
-        height = f"\"{height}\""
+        height = prospect['height'].replace('\'', '"')
+        height = f"\'{height}\'"
     except KeyError:
         height = 'NULL'
 
@@ -229,7 +233,11 @@ def update_prospect_table(pID, connection):
             f"{prospectCategoryName}," \
             f"{amateurTeam}," \
             f"{amateurLeague})"
-
-    cursor = connection.cursor()
-    cursor.execute(query)
-    connection.commit()
+    try:
+        cursor = connection.cursor()
+        cursor.execute(query)
+        connection.commit()
+    except pyodbc.ProgrammingError:
+        print("ERROR")
+        print(query)
+        return -1

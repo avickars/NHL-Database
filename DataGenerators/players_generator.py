@@ -12,7 +12,7 @@ def get_new_players():
     conn = DatabaseConnection.sql_connection(creds.server, creds.database, creds.user, creds.password)
     connection = conn.open()
 
-    # Getting the current conferences
+    # Getting the current players (checking the live feed for new players)
     players = pd.read_sql_query("select distinct playerID from live_feed where playerID not in (select playerID from players)", connection)
 
     for index, playerID in players.iterrows():
@@ -20,8 +20,35 @@ def get_new_players():
         get_player(connection, playerID)
         get_other_player_info(connection, playerID, f"\'{get_time()}\'")
 
+    # Getting the current players (checking the box_scores for new players)
+    players = pd.read_sql_query("select distinct playerID from box_scores where playerID not in (select playerID from players)", connection)
+
+    for index, playerID in players.iterrows():
+        playerID = playerID.values[0]
+        get_player(connection, playerID)
+        get_other_player_info(connection, playerID, f"\'{get_time()}\'")
 
     conn.close()
+
+
+def get_headshots(connection, playerID):
+    cursor = connection.cursor()
+
+    headshotURL = f"\'https://cms.nhl.bamgrid.com/images/headshots/current/168x168/{playerID}.jpg\'"
+
+    query = f"insert into head_shots values ({playerID}, {headshotURL}, \'{get_time()}\')"
+
+    try:
+        cursor.execute(query)
+        connection.commit()
+    except pyodbc.DataError:
+        print("ERROR")
+        print(query)
+        return -1
+    except pyodbc.ProgrammingError:
+        print("ERROR")
+        print(query)
+        return -1
 
 
 def update_players():
@@ -133,8 +160,8 @@ def get_other_player_info(connection, playerID, date):
 
     get_weight(connection, playerID, date, player)
     get_active_players(connection, playerID, date, player)
-    # # get_rookie(connection, playerID, date, player)
-    # # get_current_team(connection, playerID, date, player)
+    get_rookie(connection, playerID, date, player)
+    # get_current_team(connection, playerID, date, player)
     get_captain(connection, playerID, date, player)
     get_position(connection, playerID, date, player)
     get_alternate_captain(connection, playerID, date, player)
@@ -198,7 +225,7 @@ def get_rookie(connection, playerID, date, player):
         rookie = player['rookie']
     except KeyError:
         rookie = 'NULL'
-    if rookie:
+    if rookie == True:
         rookie = 1
     else:
         rookie = 0
