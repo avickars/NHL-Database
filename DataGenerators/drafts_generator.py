@@ -113,9 +113,11 @@ def update_prospects():
 
     for index, prospectID in players.iterrows():
         prospectID = prospectID.values[0]
-        update_prospect_table(prospectID, connection)
+        if update_prospect_table(prospectID, connection) == -1:
+            return -1
 
     conn.close()
+    return 0
 
 
 def update_prospect_table(pID, connection):

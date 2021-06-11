@@ -57,3 +57,4 @@ def get_franchises():
             cursor.commit()
 
     conn.close()
+    return 0

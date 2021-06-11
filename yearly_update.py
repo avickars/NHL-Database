@@ -5,24 +5,40 @@ from DataGenerators.teams_generator import get_teams
 from DataGenerators.seasons_generator import get_seasons
 from DataGenerators.scipt_execution import record_script_execution
 from DataGenerators.prospects_generator import get_prospects
-from DataGenerators.drafts_generator import get_drafts
+from DataGenerators.drafts_generator import get_drafts, update_prospects
+from DataGenerators.trophy_generator import get_trophies
+from DataGenerators.trophy_winner_generator import get_trophy_winners
 
 
 def main():
-    get_conferences()
+    if get_conferences() == -1:
+        return -1
     record_script_execution('get_conferences')
-    get_divisions()
+    if get_divisions() == -1:
+        return -1
     record_script_execution('get_divisions')
-    get_franchises()
+    if get_franchises() == -1:
+        return -1
     record_script_execution('get_franchises')
-    get_teams()
+    if get_teams() == -1:
+        return -1
     record_script_execution('get_teams')
-    get_seasons()
+    if get_seasons() == -1:
+        return -1
     record_script_execution('get_seasons')
-    get_prospects()
-    record_script_execution('get_prospects')
-    get_drafts()
+    if get_drafts() == -1:
+        return -1
     record_script_execution('get_drafts')
+    if update_prospects() == -1:
+        return -1
+    record_script_execution('update_prospects')
+    if get_trophies() == -1:
+        return -1
+    record_script_execution('get_trophies')
+    if get_trophy_winners() == -1:
+        return -1
+    record_script_execution('get_trophy_winners')
+
 
 if __name__ == '__main__':
     main()

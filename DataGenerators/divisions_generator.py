@@ -73,3 +73,4 @@ def get_divisions():
             break
 
     conn.close()
+    return 0

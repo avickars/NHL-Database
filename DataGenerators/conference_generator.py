@@ -5,6 +5,7 @@ import pandas as pd
 from DataGenerators.get_time import get_time
 
 
+
 def get_conferences():
     # Opening connection
     creds = DBC.DataBaseCredentials()
@@ -64,3 +65,4 @@ def get_conferences():
             break
 
     conn.close()
+    return 0

@@ -94,3 +94,4 @@ def get_seasons():
         connection.commit()
 
     conn.close()
+    return 0

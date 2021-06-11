@@ -119,3 +119,4 @@ def get_teams():
         cursor.commit()
 
     conn.close()
+    return 0

@@ -242,7 +242,6 @@ create table draft_picks (
     constraint draftPickFKTeam foreign key (teamID) references teams(teamID)
 );
 
-insert into draft_picks values (2000,1,1,1,2,6226,"Rick Dipietro")
 
 create table live_feed(
     eventID int,
@@ -294,3 +293,43 @@ create table head_shots (
     primary key (playerID,date)
 )
 
+create table trophies (
+    trophyID int,
+    categoryID int,
+    description varchar(255),
+    imageURL varchar(255),
+    name varchar(255),
+    shortName varchar(255),
+    primary key (trophyID)
+);
+
+create table trophy_winners (
+    awardedPosthumously bit,
+    coachID int,
+    isRookie bit,
+    playerID int,
+    seasonID int,
+    status varchar(255),
+    teamID int,
+    trophyID int,
+    voteCount int,
+    imageURl varchar(255),
+    fullName varchar(255)
+    primary key (coachID, playerID, seasonID, trophyID, fullName),
+    foreign key (trophyID) references trophies (trophyID)
+)
+
+create table daily_update_schedule (
+    date date,
+    primary key (date)
+)
+
+create table weekly_update_schedule (
+    date date,
+    primary key (date)
+)
+
+create table yearly_update_schedule (
+    date date,
+    primary key (date)
+)
