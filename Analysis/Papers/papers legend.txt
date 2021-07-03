@@ -1,0 +1,9 @@
+https://www.ida.liu.se/~nikca89/papers/mathsport19.pdf#cite.LS18
+
+- A Markov Game Model for Valuing Player Actions in Ice Hoc
+- Deep Reinforcement Learning in Ice Hockeyfor Context-Aware Player Evaluation
+- COMPETING  PROCESS  HAZARD  FUNCTION  MODELS  FORPLAYER  RATINGS  IN  ICE  HOCKEY
+
+- A Markov Model for Hockey Manpower Differential and Win Probability Added
+
+https://www.auai.org/uai2015/proceedings/papers/130.pdf
