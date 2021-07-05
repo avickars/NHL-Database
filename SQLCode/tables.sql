@@ -1,6 +1,6 @@
-create database hockey;
-
+-- create database hockey;
 use hockey;
+
 
 create table conferences (
     conferenceID int,
