@@ -3,7 +3,7 @@ from SQLCode import DatabaseConnection
 from SQLCode import DatabaseCredentials as DBC
 import pandas as pd
 from DataGenerators.get_time import get_time
-import pyodbc
+import mysql.connector.errors as Errors
 
 
 def get_headshots():
@@ -25,11 +25,11 @@ def get_headshots():
         try:
             cursor.execute(query)
             connection.commit()
-        except pyodbc.DataError:
+        except Errors.DataError:
             print("ERROR")
             print(query)
             return -1
-        except pyodbc.ProgrammingError:
+        except Errors.ProgrammingError:
             print("ERROR")
             print(query)
             return -1

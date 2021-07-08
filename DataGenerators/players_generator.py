@@ -3,7 +3,7 @@ from SQLCode import DatabaseConnection
 from SQLCode import DatabaseCredentials as DBC
 import pandas as pd
 from DataGenerators.get_time import get_time
-import pyodbc
+import mysql.connector.errors as Errors
 
 
 def get_new_players():
@@ -41,11 +41,11 @@ def get_headshots(connection, playerID):
     try:
         cursor.execute(query)
         connection.commit()
-    except pyodbc.DataError:
+    except Errors.DataError:
         print("ERROR")
         print(query)
         return -1
-    except pyodbc.ProgrammingError:
+    except Errors.ProgrammingError:
         print("ERROR")
         print(query)
         return -1
@@ -79,52 +79,58 @@ def get_player(connection, playerID):
 
     try:
         firstName = f"{player['firstName']}"
-        firstName = firstName.replace("\'", " ")
-        firstName = "\'" + firstName + "\'"
+        firstName = firstName
+        # firstName = firstName.replace("\'", " ")
+        firstName = "\"" + firstName + "\""
     except KeyError:
         firstName = 'NULL'
 
     try:
         lastName = f"\'{player['lastName']}\'"
-        lastName = lastName.replace("\'", " ")
-        lastName = "\'" + lastName + "\'"
+        lastName = lastName
+        # lastName = lastName.replace("\'", " ")
+        lastName = "\"" + lastName + "\""
     except KeyError:
         lastName = 'NULL'
 
     try:
-        birthDate = f"\'{player['birthDate']}\'"
+        birthDate = f"\"{player['birthDate']}\""
     except KeyError:
         birthDate = 'NULL'
 
     try:
         birthCity = f"{player['birthCity']}"
-        birthCity = birthCity.replace("\'", " ")
-        birthCity = "\'" + birthCity + "\'"
+        birthCity = birthCity
+        # birthCity = birthCity.replace("\'", " ")
+        birthCity = "\"" + birthCity + "\""
     except KeyError:
         birthCity = 'NULL'
 
     try:
         birthStateProvince = f"{player['birthStateProvince']}"
-        birthStateProvince = birthStateProvince.replace("\'", " ")
-        birthStateProvince = "\'" + birthStateProvince + "\'"
+        birthStateProvince = birthStateProvince
+        # birthStateProvince = birthStateProvince.replace("\'", " ")
+        birthStateProvince = "\"" + birthStateProvince + "\""
     except KeyError:
         birthStateProvince = 'NULL'
 
     try:
         birthCountry = f"\'{player['birthCountry']}\'"
-        birthCountry = birthCountry.replace("\'", " ")
-        birthCountry = "\'" + birthCountry + "\'"
+        birthCountry = birthCountry
+        # birthCountry = birthCountry.replace("\'", " ")
+        birthCountry = "\"" + birthCountry + "\""
     except KeyError:
         birthCountry = 'NULL'
 
     try:
-        height = player['height'].replace('\'', '"')
-        height = f"\'{height}\'"
+        height = player['height']
+        # eight = player['height'].replace('\'', '"')
+        height = f"\"{height}\""
     except KeyError:
         height = 'NULL'
 
     try:
-        shootsCatches = f"\'{player['shootsCatches']}\'"
+        shootsCatches = f"\"{player['shootsCatches']}\""
     except KeyError:
         shootsCatches = 'NULL'
 
@@ -142,9 +148,9 @@ def get_player(connection, playerID):
     cursor = connection.cursor()
     try:
         cursor.execute(query)
-    except pyodbc.ProgrammingError:
+    except Errors.ProgrammingError:
         print(query)
-        return
+        return -1
     connection.commit()
 
 
@@ -176,12 +182,12 @@ def get_roster_status(connection, playerID, date, player):
         rosterStatus = 'N'
     query = f"insert into roster_status values (" \
             f"{playerID}," \
-            f"\'{rosterStatus}\'," \
+            f"\"{rosterStatus}\"," \
             f"{date})"
     cursor = connection.cursor()
     try:
         cursor.execute(query)
-    except pyodbc.ProgrammingError:
+    except Errors.ProgrammingError:
         print(query)
     connection.commit()
 
@@ -206,10 +212,6 @@ def get_active_players(connection, playerID, date, player):
         active = player['active']
     except KeyError:
         active = 'NULL'
-    if active:
-        active = 1
-    else:
-        active = 0
 
     query = f"insert into player_active values (" \
             f"{playerID}," \
@@ -225,10 +227,6 @@ def get_rookie(connection, playerID, date, player):
         rookie = player['rookie']
     except KeyError:
         rookie = 'NULL'
-    if rookie == True:
-        rookie = 1
-    else:
-        rookie = 0
 
     query = f"insert into rookies values (" \
             f"{playerID}," \
@@ -259,11 +257,6 @@ def get_captain(connection, playerID, date, player):
         captain = player['captain']
     except KeyError:
         captain = 'NULL'
-    # Dont simplify, if 'NULL' evaluates to true
-    if captain == True:
-        captain = 1
-    else:
-        captain = 0
 
     query = f"insert into captain values (" \
             f"{playerID}," \
@@ -276,17 +269,17 @@ def get_captain(connection, playerID, date, player):
 
 def get_position(connection, playerID, date, player):
     try:
-        primaryPositionCode = f"\'{player['primaryPosition']['code']}\'"
+        primaryPositionCode = f"\"{player['primaryPosition']['code']}\""
     except KeyError:
         primaryPositionCode = 'NULL'
 
     try:
-        primaryPositionName = f"\'{player['primaryPosition']['name']}\'"
+        primaryPositionName = f"\"{player['primaryPosition']['name']}\""
     except KeyError:
         primaryPositionName = 'NULL'
 
     try:
-        primaryPositionType = f"\'{player['primaryPosition']['type']}\'"
+        primaryPositionType = f"\"{player['primaryPosition']['type']}\""
     except KeyError:
         primaryPositionType = 'NULL'
 
@@ -299,7 +292,8 @@ def get_position(connection, playerID, date, player):
 
     try:
         cursor.execute(query)
-    except pyodbc.IntegrityError:
+        connection.rollback()
+    except Errors.IntegrityError:
         cursor.execute(f"insert into positions values ("
                        f"{primaryPositionCode},"
                        f"{primaryPositionName},"
@@ -315,11 +309,6 @@ def get_alternate_captain(connection, playerID, date, player):
         alternateCaptain = player['alternateCaptain']
     except KeyError:
         alternateCaptain = 'NULL'
-    # Dont simplify, if 'NULL' evaluates to true
-    if alternateCaptain == True:
-        alternateCaptain = 1
-    else:
-        alternateCaptain = 0
 
     query = f"insert into alternate_captain values (" \
             f"{playerID}," \
@@ -332,7 +321,7 @@ def get_alternate_captain(connection, playerID, date, player):
 
 def get_number(connection, playerID, date, player):
     try:
-        primaryNumber = f"\'{player['primaryNumber']}\'"
+        primaryNumber = f"\"{player['primaryNumber']}\""
     except KeyError:
         primaryNumber = 'NULL'
 

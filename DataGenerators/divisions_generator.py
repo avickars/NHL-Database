@@ -57,16 +57,12 @@ def get_divisions():
                     f"{shortName}," \
                     f"{conferenceID})"
             cursor.execute(query)
-            cursor.commit()
+            connection.commit()
 
         active = division['active']
-        if active:
-            active = 1
-        else:
-            active = 0
         query = f"insert into division_activity (divisionID, date, active) values ({divisionID}, \'{get_time()}\', {active})"
         cursor.execute(query)
-        cursor.commit()
+        connection.commit()
 
         div += 1
         if div > 50:

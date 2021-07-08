@@ -36,7 +36,7 @@ def get_trophies():
 
             query = f"insert into trophies values ({trophyID}, {categoryID}, \'{description}\', \'{imageURL}\', \'{name}\', \'{shortName}\')"
             cursor.execute(query)
-            cursor.commit()
+            connection.commit()
         else:
             continue
 

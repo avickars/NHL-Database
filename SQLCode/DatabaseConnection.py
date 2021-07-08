@@ -1,19 +1,18 @@
-import pyodbc
+import mysql.connector
 
 
 class sql_connection():
-    def __init__(self, serverName, database, user, password):
-        self.serverName = serverName
+    def __init__(self, server, database, user, password):
+        self.server = server
         self.database = database
         self.user = user
         self.password = password
 
     def open(self):
-        conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER='+self.serverName+';DATABASE='+self.database+';UID='+self.user+';PWD='+ self.password)
-        self.conn = conn
-        return conn
+        self.conn = mysql.connector.connect(host=self.server, user=self.user, password=self.password, database=self.database)
+        return self.conn
 
     def close(self):
-        del  self.conn
+        self.conn.close()
 
 

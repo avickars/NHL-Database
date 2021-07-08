@@ -44,17 +44,17 @@ def get_franchises():
                     f"{firstSeasonID}," \
                     f"{lastSeasonID})"
             cursor.execute(query)
-            cursor.commit()
+            connection.commit()
         # Testing if our info on the franchise is still accurate, if not we update it
         elif franchises[franchises['franchiseID'] == franchiseID]['firstSeasonID'].values[0] != firstSeasonID:
             query = f"update franchises set firstSeasonID = {firstSeasonID} where franchiseID={franchiseID}"
             cursor.execute(query)
-            cursor.commit()
+            connection.commit()
         # Testing if our info on the franchise is still accurate, if not we update it
         elif franchises[franchises['franchiseID'] == franchiseID]['lastSeasonID'].values[0] != lastSeasonID:
             query = f"update franchises set lastSeasonID = {lastSeasonID} where franchiseID={franchiseID}"
             cursor.execute(query)
-            cursor.commit()
+            connection.commit()
 
     conn.close()
     return 0

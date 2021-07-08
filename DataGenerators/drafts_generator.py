@@ -5,7 +5,7 @@ import pandas as pd
 from DataGenerators.get_time import get_time
 import datetime
 import numpy as np
-import pyodbc
+import mysql.connector.errors as Errors
 from dateutil.relativedelta import relativedelta
 
 
@@ -17,7 +17,7 @@ def get_drafts():
     cursor = connection.cursor()
 
     # Getting the most recent run
-    mostRecentRun = pd.read_sql_query("select top 1 date from script_execution where script = 'get_drafts' order by date desc",
+    mostRecentRun = pd.read_sql_query("select date from script_execution where script = 'get_drafts' order by date desc limit 1",
                                       connection)
 
     # If we've never run it before, we start from the beginning
@@ -91,7 +91,7 @@ def get_drafts():
                 try:
                     cursor.execute(query)
                     connection.commit()
-                except pyodbc.ProgrammingError:
+                except Errors.ProgrammingError:
                     print("Error")
                     print(query)
                     return -1
@@ -109,7 +109,7 @@ def update_prospects():
     connection = conn.open()
 
     # Getting the current conferences
-    players = pd.read_sql_query("select * from (select distinct prospectID from draft_picks where prospectID not in (select prospectID from prospects) ) P where ISNULL(P.prospectID,1) <> 1", connection)
+    players = pd.read_sql_query("select * from (select distinct prospectID from draft_picks where prospectID not in (select prospectID from prospects) ) P where P.prospectID is not null", connection)
 
     for index, prospectID in players.iterrows():
         prospectID = prospectID.values[0]
@@ -239,7 +239,7 @@ def update_prospect_table(pID, connection):
         cursor = connection.cursor()
         cursor.execute(query)
         connection.commit()
-    except pyodbc.ProgrammingError:
+    except Errors.ProgrammingError:
         print("ERROR")
         print(query)
         return -1

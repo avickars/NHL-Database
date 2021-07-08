@@ -1,4 +1,4 @@
--- create database hockey;
+create database hockey;
 use hockey;
 
 
@@ -10,12 +10,12 @@ create table conferences (
     primary key (conferenceID)
 );
 
-create table conference_activity(
-	conferenceID int not null,
-	date datetime not null,
-	active bit not null
-	primary key (conferenceID, date),
-	foreign key (conferenceID) references conferences(conferenceID),
+create table conference_activity (
+    conferenceID int not null,
+    date datetime not null,
+    active bool not null ,
+    primary key (conferenceID, date),
+    foreign key (conferenceID) references conferences(conferenceID)
 );
 
 create table divisions (
@@ -31,7 +31,7 @@ create table divisions (
 create table division_activity(
 	divisionID int not null,
 	date datetime not null,
-	active bit not null,
+	active bool not null,
 	primary key(divisionID, date),
 	foreign key (divisionID) references divisions(divisionID)
 );
@@ -58,7 +58,7 @@ create table teams (
 create table team_activity(
 	teamID int not null,
 	date datetime not null,
-	active bit not null,
+	active bool not null,
 	primary key(teamID, date),
 	foreign key (teamID) references teams(teamID)
 );
@@ -80,7 +80,7 @@ create table team_plays_in_venue (
 	teamID int,
 	foreign key (teamID) references teams (teamID),
 	primary key (date, teamID)
-)
+);
 
 
 create table seasons (
@@ -89,11 +89,11 @@ create table seasons (
     regularSeasonEndDate date not null ,
     seasonEndDate date not null ,
     numberOfGames int not null ,
-    tiesInUse bit not null ,
-    olympic_participation bit not null ,
-    conferences_in_use bit not null ,
-    divisions_in_use bit not null ,
-    wild_card_in_use bit not null ,
+    tiesInUse bool not null ,
+    olympic_participation bool not null ,
+    conferences_in_use bool not null ,
+    divisions_in_use bool not null ,
+    wild_card_in_use bool not null ,
     primary key (seasonID)
 );
 
@@ -152,7 +152,7 @@ create table player_weighs (
 
 create table player_active (
     playerID int,
-    active bit,
+    active bool,
     date datetime,
     primary key (playerID, active, date),
     foreign key (playerID) references players (playerID)
@@ -169,7 +169,7 @@ create table wears_number (
 
 create table captain(
     playerID int,
-    captain bit,
+    captain bool,
     date datetime,
     primary key (playerID, date),
     foreign key (playerID) references players (playerID)
@@ -177,7 +177,7 @@ create table captain(
 
 create table alternate_captain(
     playerID int,
-    alternateCaptain bit,
+    alternateCaptain bool,
     date datetime,
     primary key (playerID, date),
     foreign key (playerID) references players (playerID)
@@ -202,7 +202,7 @@ create table plays_position (
 
 create table rookies (
     playerID int,
-    rookie bit,
+    rookie bool,
     date datetime,
     primary key (playerID, date),
     foreign key (playerID) references players (playerID)
@@ -218,7 +218,7 @@ create table prospects (
     birthCountry varchar(255),
     height varchar(255),
     weight int,
-    shoots char,
+    shoots char(1),
     position char,
     nhlPlayerID int,
     prospectCategoryID int,
@@ -262,8 +262,8 @@ create table live_feed(
     penaltySeverity varchar(255),
     penaltyMinutes int,
     strength varchar(255),
-    gameWinningGoal bit,
-    emptyNetGoal bit,
+    gameWinningGoal bool,
+    emptyNetGoal bool,
     primary key (gameID, eventID, eventSubID),
     foreign key (gameID) references schedules(gameID),
     foreign key (teamID) references teams (teamID)
@@ -279,19 +279,19 @@ create table box_scores (
     evenTimeOnIce varchar(255),
     powerPlayTimeOnIce varchar(255),
     shortHandedTimeOnIce varchar(255),
-    unknown bit,
-    scratched bit,
+    unknown bool,
+    scratched bool,
     primary key (gameID, teamID, playerID),
     foreign key (gameID) references schedules (gameID),
     foreign key (teamID) references teams (teamID)
-)
+);
 
 create table head_shots (
     playerID int,
     headshot varchar(255),
     date datetime,
     primary key (playerID,date)
-)
+);
 
 create table trophies (
     trophyID int,
@@ -304,9 +304,9 @@ create table trophies (
 );
 
 create table trophy_winners (
-    awardedPosthumously bit,
+    awardedPosthumously bool,
     coachID int,
-    isRookie bit,
+    isRookie bool,
     playerID int,
     seasonID int,
     status varchar(255),
@@ -314,22 +314,22 @@ create table trophy_winners (
     trophyID int,
     voteCount int,
     imageURl varchar(255),
-    fullName varchar(255)
+    fullName varchar(255),
     primary key (coachID, playerID, seasonID, trophyID, fullName),
     foreign key (trophyID) references trophies (trophyID)
-)
+);
 
 create table daily_update_schedule (
     date date,
     primary key (date)
-)
+);
 
 create table weekly_update_schedule (
     date date,
     primary key (date)
-)
+);
 
 create table yearly_update_schedule (
     date date,
     primary key (date)
-)
+);

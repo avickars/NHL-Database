@@ -5,7 +5,7 @@ from DataGenerators.get_time import get_time
 import pandas as pd
 import numpy as np
 import datetime
-import pyodbc
+import mysql.connector.errors as Errors
 from DataGenerators.players_generator import *
 
 
@@ -17,7 +17,7 @@ def get_live_data():
     cursor = connection.cursor()
 
     # Getting the most recent run
-    mostRecentRun = pd.read_sql_query("select top 1 date from script_execution where script = 'get_live_data' order by date desc",
+    mostRecentRun = pd.read_sql_query("select date from script_execution where script = 'get_live_data' order by date desc limit 1",
                                       connection)
 
     # If we've never run it before, we start from the beginning
@@ -73,30 +73,32 @@ def get_live_data():
                 teamID = 'NULL'
 
             try:
-                gameEvent = f"\'{event['result']['event']}\'"
+                gameEvent = f"\"{event['result']['event']}\""
             except KeyError:
                 gameEvent = 'NULL'
 
             try:
-                eventCode = f"\'{event['result']['eventCode']}\'"
+                eventCode = f"\"{event['result']['eventCode']}\""
             except KeyError:
                 eventCode = 'NULL'
 
             try:
-                eventTypeID = f"\'{event['result']['eventTypeId']}\'"
+                eventTypeID = f"\"{event['result']['eventTypeId']}\""
             except KeyError:
                 eventTypeID = 'NULLeventTypeID'
 
             try:
                 eventDescription = f"{event['result']['description']}"
-                eventDescription = eventDescription.replace("\'", " ")
-                eventDescription = "\'" + eventDescription + "\'"
+                eventDescription = eventDescription
+                # eventDescription = eventDescription.replace("\'", " ")
+                eventDescription = "\"" + eventDescription + "\""
             except KeyError:
                 eventDescription = 'NULL'
             try:
                 secondaryType = f"{event['result']['secondaryType']}"
-                secondaryType = secondaryType.replace("\'", " ")
-                secondaryType = "\'" + secondaryType + "\'"
+                secondaryType = secondaryType
+                # secondaryType = secondaryType.replace("\'", " ")
+                secondaryType = "\"" + secondaryType + "\""
             except KeyError:
                 secondaryType = 'NULL'
 
@@ -108,7 +110,7 @@ def get_live_data():
             eventID = event['about']['eventId']
 
             try:
-                periodTime = f"\'{event['about']['periodTime']}\'"
+                periodTime = f"\"{event['about']['periodTime']}\"'"
             except KeyError:
                 periodTime = 'NULL'
 
@@ -123,7 +125,7 @@ def get_live_data():
                 yCoordinate = 'NULL'
 
             try:
-                penaltySeverity = f"\'{event['result']['penaltySeverity']}\'"
+                penaltySeverity = f"\"{event['result']['penaltySeverity']}\""
             except KeyError:
                 penaltySeverity = 'NULL'
 
@@ -133,7 +135,7 @@ def get_live_data():
                 penaltyMinutes = 'NULL'
 
             try:
-                strength = f"\'{event['result']['strength']['code']}\'"
+                strength = f"\"{event['result']['strength']['code']}\""
             except KeyError:
                 strength = 'NULL'
 
@@ -141,21 +143,11 @@ def get_live_data():
                 gameWinningGoal = event['result']['gameWinningGoal']
             except KeyError:
                 gameWinningGoal = 'NULL'
-            # Dont simplify, if 'NULL' evaluates to true
-            if gameWinningGoal == True:
-                gameWinningGoal = 1
-            else:
-                gameWinningGoal = 0
 
             try:
                 emptyNetGoal = event['result']['emptyNet']
             except KeyError:
                 emptyNetGoal = 'NULL'
-            # Dont simplify, if 'NULL' evaluates to true
-            if emptyNetGoal == True:
-                emptyNetGoal = 1
-            else:
-                emptyNetGoal = 0
 
             for i in range(0, len(playerID)):
                 query = f"insert into live_feed values (" \
@@ -170,7 +162,7 @@ def get_live_data():
                         f"{periodNum}," \
                         f"{periodTime}," \
                         f"{playerID[i]}," \
-                        f"\'{playerType[i]}\'," \
+                        f"\"{playerType[i]}\"," \
                         f"{xCoordinate}," \
                         f"{yCoordinate}," \
                         f"{teamID}," \
@@ -182,7 +174,7 @@ def get_live_data():
                 try:
                     cursor.execute(query)
                     connection.commit()
-                except pyodbc.ProgrammingError:
+                except Errors.ProgrammingError:
                     print(query)
                     return -1
 
