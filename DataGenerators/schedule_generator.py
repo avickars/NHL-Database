@@ -3,7 +3,7 @@ from SQLCode import DatabaseConnection
 from SQLCode import DatabaseCredentials as DBC
 from DataGenerators.get_time import get_time
 import pandas as pd
-import pyodbc
+import mysql.connector.errors as Errors
 
 from datetime import date, datetime
 
@@ -78,7 +78,7 @@ def get_teams(teamID):
                 f"{officialSiteUrl}," \
                 f"{franchiseID})"
         cursor.execute(query)
-        cursor.commit()
+        connection.commit()
     else:
         # Lets refresh the data in the table
         query = f"update teams " \
@@ -89,20 +89,16 @@ def get_teams(teamID):
                 f"franchiseID = {franchiseID} " \
                 f"where teamID = {teamID};"
         cursor.execute(query)
-        cursor.commit()
+        connection.commit()
 
     # Updating whether or not the team is active
     try:
         active = team['active']
     except KeyError:
         active = 'NULL'
-    if active:
-        active = 1
-    else:
-        active = 0
     query = f"insert into team_activity (teamID, date, active) values ({teamID}, \'{get_time()}\', {active})"
     cursor.execute(query)
-    cursor.commit()
+    connection.commit()
 
     # Updating the venue the team plays in
     try:
@@ -120,8 +116,9 @@ def get_teams(teamID):
     except KeyError:
         timeZone = 'NULL'
     query = f"insert into team_plays_in_venue values ({venueName},{venueCity},{timeZone},'{get_time()}',{teamID})"
+    print('Here5')
     cursor.execute(query)
-    cursor.commit()
+    connection.commit()
 
     # Updating the teams division
     try:
@@ -130,8 +127,8 @@ def get_teams(teamID):
         divisionID = 'NULL'
     query = f"insert into team_plays_in_division values ({teamID}, {divisionID}, '{get_time()}')"
     cursor.execute(query)
-    cursor.commit()
-    conn.close()
+    connection.commit()
+    connection.close()
 
 
 def get_schedule():
@@ -177,15 +174,18 @@ def get_schedule():
                 # Trying to execute the query
                 try:
                     cursor.execute(query)
-                except pyodbc.IntegrityError:
+                    connection.commit()
+                except Errors.IntegrityError:
                     # I found there were a lot of outlier teams that I didn't catch in teams_generator, so adding them in here
                     print(query)
+                    connection.rollback()
                     get_teams(homeTeamID)
                     get_teams(awayTeamID)
                     cursor.execute(query)
-                except pyodbc.ProgrammingError:
-                    return 1
-                connection.commit()
+                    connection.commit()
+                except Errors.ProgrammingError:
+                    print(query)
+                    return -1
 
     conn.close()
 

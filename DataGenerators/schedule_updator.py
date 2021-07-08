@@ -4,9 +4,7 @@ from SQLCode import DatabaseCredentials as DBC
 from DataGenerators.get_time import get_time
 import pandas as pd
 import numpy as np
-import pyodbc
-
-# from datetime import date, datetime
+import mysql.connector.errors as Errors
 import datetime
 
 
@@ -46,17 +44,17 @@ def get_teams(teamID):
         teamID = 'NULL'
 
     try:
-        locationName = f"\'{team['locationName']}\'"
+        locationName = f"\"{team['locationName']}\""
     except KeyError:
         locationName = 'NULL'
 
     try:
-        teamName = f"\'{team['teamName']}\'"
+        teamName = f"\"{team['teamName']}\""
     except KeyError:
         teamName = 'NULL'
 
     try:
-        abbreviation = f"\'{team['abbreviation']}\'"
+        abbreviation = f"\"{team['abbreviation']}\""
     except KeyError:
         abbreviation = 'NULL'
 
@@ -66,11 +64,11 @@ def get_teams(teamID):
         franchiseID = 'NULL'
 
     try:
-        officialSiteUrl = f"\'{team['officialSiteUrl']}\'"
+        officialSiteUrl = f"\"{team['officialSiteUrl']}\""
     except KeyError:
         officialSiteUrl = 'NULL'
 
-    # Testing to see if we already have the conference in the system
+    # Testing to see if we already have the team in the system
     if len(teams[teams['teamID'] == teamID]) == 0:
         # If no, then we add it
         query = f"insert into teams values({teamID}, " \
@@ -80,7 +78,7 @@ def get_teams(teamID):
                 f"{officialSiteUrl}," \
                 f"{franchiseID})"
         cursor.execute(query)
-        cursor.commit()
+        connection.commit()
     else:
         # Lets refresh the data in the table
         query = f"update teams " \
@@ -91,20 +89,16 @@ def get_teams(teamID):
                 f"franchiseID = {franchiseID} " \
                 f"where teamID = {teamID};"
         cursor.execute(query)
-        cursor.commit()
+        connection.commit()
 
     # Updating whether or not the team is active
     try:
         active = team['active']
     except KeyError:
         active = 'NULL'
-    if active:
-        active = 1
-    else:
-        active = 0
     query = f"insert into team_activity (teamID, date, active) values ({teamID}, \'{get_time()}\', {active})"
     cursor.execute(query)
-    cursor.commit()
+    connection.commit()
 
     # Updating the venue the team plays in
     try:
@@ -123,7 +117,7 @@ def get_teams(teamID):
         timeZone = 'NULL'
     query = f"insert into team_plays_in_venue values ({venueName},{venueCity},{timeZone},'{get_time()}',{teamID})"
     cursor.execute(query)
-    cursor.commit()
+    connection.commit()
 
     # Updating the teams division
     try:
@@ -132,7 +126,7 @@ def get_teams(teamID):
         divisionID = 'NULL'
     query = f"insert into team_plays_in_division values ({teamID}, {divisionID}, '{get_time()}')"
     cursor.execute(query)
-    cursor.commit()
+    connection.commit()
     conn.close()
 
 
@@ -144,7 +138,7 @@ def get_daily_schedule():
     cursor = connection.cursor()
 
     # Getting the most recent run
-    mostRecentRun = pd.read_sql_query("select top 1 date from script_execution where script = 'get_daily_schedule' order by date desc",
+    mostRecentRun = pd.read_sql_query("select date from script_execution where script = 'get_daily_schedule' order by date desc limit 1",
                                       connection)
 
     # Getting the games from the current season
@@ -156,16 +150,17 @@ def get_daily_schedule():
     mostRecentRun = datetime.datetime.utcfromtimestamp(mostRecentRun)  # Adding one day on since we already ran it
     mostRecentRun = mostRecentRun.date()
     while mostRecentRun < datetime.date.today():
+        print(mostRecentRun)
         url = requests.get(f"https://statsapi.web.nhl.com/api/v1/schedule?date={mostRecentRun}")
         url_data = url.json()
 
         for date in url_data['dates']:
-            gameDate = f"\'{date['date']}\'"
+            gameDate = f"\"{date['date']}\""
 
             for game in date['games']:
                 gameID = game['gamePk']
 
-                gameType = f"\'{game['gameType']}\'"
+                gameType = f"\"{game['gameType']}\""
 
                 homeTeamID = game['teams']['home']['team']['id']
 
@@ -184,11 +179,11 @@ def get_daily_schedule():
                             f"{awayTeamID})"
                     try:
                         cursor.execute(query)
-                    except pyodbc.IntegrityError:
+                    except Errors.IntegrityError:
                         get_teams(homeTeamID)
                         get_teams(awayTeamID)
                         cursor.execute(query)
-                    cursor.commit()
+                    connection.commit()
 
                 # Otherwise, it maybe got rescheduled, so lets update the schedule
                 else:
@@ -202,11 +197,13 @@ def get_daily_schedule():
                             f" where gameID = {gameID}"
                     try:
                         cursor.execute(query)
-                    except pyodbc.IntegrityError:
+                        connection.rollback()
+                    except Errors.IntegrityError:
+                        print(query)
                         get_teams(homeTeamID)
                         get_teams(awayTeamID)
                         cursor.execute(query)
-                    cursor.commit()
+                    connection.commit()
 
 
         # Incrementing the most recent run, since we have now updated the schedule to games up to mostRecentRun not (not including it though)

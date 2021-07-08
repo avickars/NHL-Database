@@ -11,6 +11,6 @@ def record_script_execution(script):
 
     query = f"insert into script_execution values (\'{script}\', \'{get_time()}\')"
     cursor.execute(query)
-    cursor.commit()
+    connection.commit()
 
     conn.close()

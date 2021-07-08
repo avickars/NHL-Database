@@ -48,17 +48,13 @@ def get_conferences():
                     f"{abbreviation}," \
                     f"{shortName})"
             cursor.execute(query)
-            cursor.commit()
+            connection.commit()
 
         # Updating the conference info
         active = conference['active']
-        if active:
-            active = 1
-        else:
-            active = 0
         query = f"insert into conference_activity (conferenceID, date, active) values ({conferenceID}, \'{get_time()}\', {active})"
         cursor.execute(query)
-        cursor.commit()
+        connection.commit()
 
         conf += 1
         if conf > 50:

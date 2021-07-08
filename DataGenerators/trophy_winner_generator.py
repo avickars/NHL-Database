@@ -51,16 +51,8 @@ def get_trophy_winners():
                            (winners['fullName'] == fullName.replace("\'",""))]) == 0:
 
                 awardedPosthumously = winner['awardedPosthumously']
-                if awardedPosthumously == True:
-                    awardedPosthumously = 1
-                else:
-                    awardedPosthumously = 0
 
                 isRookie = winner['isRookie']
-                if isRookie == True:
-                    isRookie = 1
-                else:
-                    isRookie = 0
 
                 status = f"\'{winner['status']}\'"
 
@@ -83,7 +75,7 @@ def get_trophy_winners():
                 query = f"insert into trophy_winners values ({awardedPosthumously}, {coachID}, {isRookie}, {playerID}, {seasonID}, {status}, {teamID}, {trophyID}, {voteCount}, {imageURL}, {fullName})"
                 try:
                     cursor.execute(query)
-                    cursor.commit()
+                    connection.commit()
                 except pyodbc.IntegrityError:
                     print(query)
                     return -1

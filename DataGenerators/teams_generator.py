@@ -64,7 +64,7 @@ def get_teams():
                     f"{officialSiteUrl}," \
                     f"{franchiseID})"
             cursor.execute(query)
-            cursor.commit()
+            connection.commit()
         else:
             # Lets refresh the data in the table
             query = f"update teams " \
@@ -75,20 +75,16 @@ def get_teams():
                     f"franchiseID = {franchiseID} " \
                     f"where teamID = {teamID};"
             cursor.execute(query)
-            cursor.commit()
+            connection.commit()
 
         # Updating whether or not the team is active
         try:
             active = team['active']
         except KeyError:
             active = 'NULL'
-        if active:
-            active = 1
-        else:
-            active = 0
         query = f"insert into team_activity (teamID, date, active) values ({teamID}, \'{get_time()}\', {active})"
         cursor.execute(query)
-        cursor.commit()
+        connection.commit()
 
         # Updating the venue the team plays in
         try:
@@ -107,7 +103,7 @@ def get_teams():
             timeZone = 'NULL'
         query = f"insert into team_plays_in_venue values ({venueName},{venueCity},{timeZone},'{get_time()}',{teamID})"
         cursor.execute(query)
-        cursor.commit()
+        connection.commit()
 
         # Updating the teams division
         try:
@@ -116,7 +112,7 @@ def get_teams():
             divisionID = 'NULL'
         query = f"insert into team_plays_in_division values ({teamID}, {divisionID}, '{get_time()}')"
         cursor.execute(query)
-        cursor.commit()
+        connection.commit()
 
     conn.close()
     return 0

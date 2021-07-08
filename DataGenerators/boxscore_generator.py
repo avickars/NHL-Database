@@ -5,8 +5,8 @@ from DataGenerators.get_time import get_time
 import pandas as pd
 import numpy as np
 import datetime
-import pyodbc
 from DataGenerators.players_generator import *
+from mysql.connector.errors import Error
 
 
 def get_boxscore():
@@ -17,7 +17,7 @@ def get_boxscore():
     cursor = connection.cursor()
 
     # Getting the most recent run
-    mostRecentRun = pd.read_sql_query("select top 1 date from script_execution where script = 'get_boxscore' order by date desc",
+    mostRecentRun = pd.read_sql_query("select date from script_execution where script = 'get_boxscore' order by date desc limit 1",
                                       connection)
 
     # If we've never run it before, we start from the beginning
@@ -63,14 +63,14 @@ def get_boxscore():
                     jerseyNumber = 'NULL'
 
                 if players[player]['position']['code'] == 'G':
-                    timeOnIce = f"\'{players[player]['stats']['goalieStats']['timeOnIce']}\'"
+                    timeOnIce = f"\"{players[player]['stats']['goalieStats']['timeOnIce']}\""
                     plusMinus = 'NULL'
                     evenTimeOnIce = 'NULL'
                     powerPlayTimeOnIce = 'NULL'
                     shortHandedTimeOnIce = 'NULL'
                 else:
                     try:
-                        timeOnIce = f"\'{players[player]['stats']['skaterStats']['timeOnIce']}\'"
+                        timeOnIce = f"\"{players[player]['stats']['skaterStats']['timeOnIce']}\""
                     except KeyError:
                         timeOnIce = 'NULL'
 
@@ -80,23 +80,23 @@ def get_boxscore():
                         plusMinus = 'NULL'
 
                     try:
-                        evenTimeOnIce = f"\'{players[player]['stats']['skaterStats']['evenTimeOnIce']}\'"
+                        evenTimeOnIce = f"\"{players[player]['stats']['skaterStats']['evenTimeOnIce']}\""
                     except KeyError:
                         evenTimeOnIce = 'NULL'
 
                     try:
-                        powerPlayTimeOnIce = f"\'{players[player]['stats']['skaterStats']['powerPlayTimeOnIce']}\'"
+                        powerPlayTimeOnIce = f"\"{players[player]['stats']['skaterStats']['powerPlayTimeOnIce']}\""
                     except KeyError:
                         powerPlayTimeOnIce = 'NULL'
 
                     try:
-                        shortHandedTimeOnIce = f"\'{players[player]['stats']['skaterStats']['shortHandedTimeOnIce']}\'"
+                        shortHandedTimeOnIce = f"\"{players[player]['stats']['skaterStats']['shortHandedTimeOnIce']}\""
                     except KeyError:
                         shortHandedTimeOnIce = 'NULL'
                 if timeOnIce != 'NULL':
                     unknown = 0
                     scratched = 0
-                    if timeOnIce == "\'0:00\'":
+                    if timeOnIce == "\"0:00\"":
                         unknown = 1
                 else:
                     unknown = 1
@@ -117,11 +117,7 @@ def get_boxscore():
                 try:
                     cursor.execute(query)
                     connection.commit()
-                except pyodbc.ProgrammingError:
-                    print("ERROR")
-                    print(query)
-                    return -1
-                except pyodbc.DataError:
+                except Error:
                     print("ERROR")
                     print(query)
                     return -1
@@ -157,11 +153,7 @@ def get_boxscore():
                 try:
                     cursor.execute(query)
                     connection.commit()
-                except pyodbc.DataError:
-                    print("ERROR")
-                    print(query)
-                    return -1
-                except pyodbc.ProgrammingError:
+                except Error:
                     print("ERROR")
                     print(query)
                     return -1
