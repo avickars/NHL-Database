@@ -213,7 +213,7 @@ def get_active_players(connection, playerID, date, player):
     try:
         active = player['active']
     except KeyError:
-        active = 'NULL'
+        active = False
 
     query = f"insert into player_active values (" \
             f"{playerID}," \
