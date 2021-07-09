@@ -9,15 +9,15 @@ def main():
     if get_daily_schedule() == -1:
         return -1
     record_script_execution('get_daily_schedule')
-    # if get_live_data() == -1:
-    #     return -1
-    # record_script_execution('get_live_data')
-    # if get_boxscore() == -1:
-    #     return -1
-    # record_script_execution('get_boxscore')
-    # if get_new_players() == -1:
-    #     return -1
-    # record_script_execution('get_new_players')
+    if get_live_data() == -1:
+        return -1
+    record_script_execution('get_live_data')
+    if get_boxscore() == -1:
+        return -1
+    record_script_execution('get_boxscore')
+    if get_new_players() == -1:
+        return -1
+    record_script_execution('get_new_players')
 
 
 
