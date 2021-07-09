@@ -13,12 +13,16 @@ def get_new_players():
     connection = conn.open()
 
     # Getting the current players (checking the live feed for new players)
+    print('Getting New Players')
     players = pd.read_sql_query("select distinct playerID from live_feed where playerID not in (select playerID from players)", connection)
+    print(players)
 
     for index, playerID in players.iterrows():
         playerID = playerID.values[0]
-        get_player(connection, playerID)
+        if get_player(connection, playerID) == -1:
+            return -1
         get_other_player_info(connection, playerID, f"\'{get_time()}\'")
+        break
 
     # Getting the current players (checking the box_scores for new players)
     players = pd.read_sql_query("select distinct playerID from box_scores where playerID not in (select playerID from players)", connection)
@@ -68,6 +72,7 @@ def update_players():
 
 
 def get_player(connection, playerID):
+    print(playerID)
     url_string = f"https://statsapi.web.nhl.com/api/v1/people/{playerID}"
     url = requests.get(url_string)
     url_data = url.json()
@@ -124,7 +129,7 @@ def get_player(connection, playerID):
 
     try:
         height = player['height']
-        # eight = player['height'].replace('\'', '"')
+        height = player['height'].replace('\"', '')
         height = f"\"{height}\""
     except KeyError:
         height = 'NULL'
@@ -185,10 +190,7 @@ def get_roster_status(connection, playerID, date, player):
             f"\"{rosterStatus}\"," \
             f"{date})"
     cursor = connection.cursor()
-    try:
-        cursor.execute(query)
-    except Errors.ProgrammingError:
-        print(query)
+    cursor.execute(query)
     connection.commit()
 
 
