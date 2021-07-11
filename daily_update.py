@@ -18,15 +18,6 @@ def main():
     if get_new_players() == -1:
         return -1
     record_script_execution('get_new_players')
-    if get_new_backup() == -1:
-        return -1
-    record_script_execution('get_new_backup')
-    if upload_backup() == -1:
-        return -1
-    record_script_execution('upload_backup')
-
-
-
 
 
 if __name__ == '__main__':
