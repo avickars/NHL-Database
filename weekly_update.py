@@ -4,9 +4,9 @@ from DataGenerators.backup_generator import upload_backup, get_new_backup
 
 
 def main():
-    # if update_players() == -1:
-    #     return -1
-    # record_script_execution('update_players')
+    if update_players() == -1:
+        return -1
+    record_script_execution('update_players')
     if get_new_backup() == -1:
         return -1
     record_script_execution('get_new_backup')
