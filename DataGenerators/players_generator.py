@@ -171,7 +171,7 @@ def get_other_player_info(connection, playerID, date):
     get_weight(connection, playerID, date, player)
     get_active_players(connection, playerID, date, player)
     get_rookie(connection, playerID, date, player)
-    # get_current_team(connection, playerID, date, player)
+    get_current_team(connection, playerID, date, player)
     get_captain(connection, playerID, date, player)
     get_position(connection, playerID, date, player)
     get_alternate_captain(connection, playerID, date, player)
