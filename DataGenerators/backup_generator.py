@@ -39,9 +39,9 @@ def upload_backup():
 
     folderID = '1C-sjhFggAlxcjkVf529o8iP7JA87znYh'
 
-    file_metadata = {'name': '/home/pi/Documents/mysql_backups/hockey_db_backup.sql', 'parents': [folderID]}
+    file_metadata = {'name': 'hockey_db_backup.sql', 'parents': [folderID]}
 
-    media = MediaFileUpload(filename='hockey_db_backup.sql', resumable=True)
+    media = MediaFileUpload(filename='/home/pi/Documents/mysql_backups/hockey_db_backup.sql', resumable=True)
 
     # service.files().create(body=file_metadata, media_body=media, fields='id').execute()
 
