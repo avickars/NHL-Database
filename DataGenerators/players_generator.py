@@ -15,7 +15,6 @@ def get_new_players():
     # Getting the current players (checking the live feed for new players)
     print('Getting New Players')
     players = pd.read_sql_query("select distinct playerID from live_feed where playerID not in (select playerID from players)", connection)
-    print(players)
 
     for index, playerID in players.iterrows():
         playerID = playerID.values[0]

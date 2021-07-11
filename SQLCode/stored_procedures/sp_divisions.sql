@@ -1,10 +1,11 @@
-CREATE procedure divisions_view as
-drop table production.dbo.divisions_view
+CREATE procedure divisions_view()
+begin
+drop table if exists production_hockey.divisions_view;
+create table production_hockey.divisions_view as
 select d.conferenceID as 'Conference ID',
        d.divisionName as 'Division Name',
        d.abbreviation as 'Division Abbreviation',
        d.divisionID
-into production.dbo.divisions_view
 from divisions d
 inner join
     (
@@ -14,6 +15,6 @@ inner join
         where active=1
     ) da
 on d.divisionID = da.divisionID
-where rowNum = 1
-go
+where rowNum = 1;
+end
 
