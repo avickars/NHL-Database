@@ -53,7 +53,7 @@ def delete_old_backup():
         for item in items:
             if item['name'] == 'hockey_db_backup.sql':
                 print(dateutil.parser.isoparse(item['modifiedTime']))
-                if dateutil.parser.isoparse(item['modifiedTime']) > minTime:
+                if dateutil.parser.isoparse(item['modifiedTime']) < minTime:
                     minTime = dateutil.parser.isoparse(item['modifiedTime'])
                     oldBackupID = item['id']
     try:
