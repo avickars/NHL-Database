@@ -12,6 +12,7 @@ import pytz
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
+
 def delete_old_backup():
     """Shows basic usage of the Drive v3 API.
     Prints the names and ids of the first 10 files the user has access to.
@@ -61,7 +62,6 @@ def delete_old_backup():
     except errors.HttpError:
         print('Error Occured')
 
-delete_old_backup()
 
 def get_new_backup():
     os.system('sudo mysqldump hockey > ~/Documents/mysql_backups/hockey_db_backup.sql')
@@ -117,5 +117,3 @@ def upload_backup():
     #     print('Files:')
     #     for item in items:
     #         print(u'{0} ({1})'.format(item['name'], item['id']))
-
-
