@@ -13,7 +13,7 @@ from googleapiclient.http import MediaFileUpload
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
 
-def get_backup():
+def upload_backup():
     """Shows basic usage of the Drive v3 API.
     Prints the names and ids of the first 10 files the user has access to.
     """
@@ -61,7 +61,6 @@ def get_backup():
     #         print(u'{0} ({1})'.format(item['name'], item['id']))
 
 
-get_backup()
 
 
 
