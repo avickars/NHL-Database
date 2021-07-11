@@ -1,9 +1,10 @@
-CREATE procedure sp_conferences_view  as
-drop table if exists production.dbo.conferences_view
+CREATE procedure sp_conferences_view()
+begin
+drop table if exists production_hockey.conferences_view;
+create table production_hockey.conferences_view as
 select c.conferenceName as 'Conference Name',
        c.abbreviation as 'Conference Abbreviation',
        c.conferenceID as 'Conference ID'
-into production.dbo.conferences_view
 from conferences c
 inner join
     (
@@ -13,6 +14,6 @@ inner join
         where active=1
     ) ca
 on c.conferenceID = ca.conferenceID
-where rowNum = 1
-go
+where rowNum = 1;
+end;
 

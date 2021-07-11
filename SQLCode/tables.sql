@@ -158,6 +158,14 @@ create table player_active (
     foreign key (playerID) references players (playerID)
 );
 
+create table plays_for (
+    playerID int,
+    teamID int,
+    date datetime,
+    primary key (playerID, teamID, date),
+    foreign key (playerID) references players (playerID) on delete cascade ,
+    foreign key (teamID) references teams (teamID) on delete cascade
+);
 
 create table wears_number (
     playerID int,
