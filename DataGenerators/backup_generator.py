@@ -1,6 +1,3 @@
-from SQLCode import DatabaseConnection
-from SQLCode import DatabaseCredentials as DBC
-import pandas as pd
 import os.path
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -13,7 +10,7 @@ SCOPES = ['https://www.googleapis.com/auth/drive']
 
 
 def get_new_backup():
-    os.system('sudo mysql')
+    os.system('sudo mysqldump hockey > ~/Documents/mysql_backups/hockey_db_backup.sql')
 
 
 def upload_backup():
@@ -42,11 +39,9 @@ def upload_backup():
 
     folderID = '1C-sjhFggAlxcjkVf529o8iP7JA87znYh'
 
-    file_metadata = {'name': '~/Documents/mysql_backups/hockey_db_backup.sql', 'parents': [folderID]}
-    # file_metadata = {'name': 'test.csv', 'parents': [folderID]}
+    file_metadata = {'name': '/home/pi/Documents/mysql_backups/hockey_db_backup.sql', 'parents': [folderID]}
 
     media = MediaFileUpload(filename='hockey_db_backup.sql', resumable=True)
-    # media = MediaFileUpload(filename='DataGenerators/test.csv', mimetype='text/csv', resumable=True)
 
     # service.files().create(body=file_metadata, media_body=media, fields='id').execute()
 
