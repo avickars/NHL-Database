@@ -45,7 +45,7 @@ def delete_old_backup():
 
     oldBackupID = 'NULL'
     utc = pytz.UTC
-    minTime = utc.localize(datetime(2017, 11, 28, 23, 55, 59, 342380))
+    minTime = utc.localize(datetime(2030, 11, 28, 23, 55, 59, 342380))
     if not items:
         print('No files found.')
     else:
@@ -60,6 +60,8 @@ def delete_old_backup():
         service.files().delete(fileId=oldBackupID).execute()
     except errors.HttpError:
         print('Error Occured')
+
+delete_old_backup()
 
 def get_new_backup():
     os.system('sudo mysqldump hockey > ~/Documents/mysql_backups/hockey_db_backup.sql')
