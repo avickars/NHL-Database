@@ -107,7 +107,7 @@ def get_live_data():
             except KeyError:
                 periodNum = 'NULL'
 
-            eventID = event['about']['eventId']
+            eventID = event['about']['eventIdx']
 
             try:
                 periodTime = f"\"{event['about']['periodTime']}\""
