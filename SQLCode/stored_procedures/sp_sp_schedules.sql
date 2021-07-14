@@ -1,7 +1,8 @@
-create procedure sp_schedules as
-drop table production.dbo.schedules
+create procedure sp_schedules_view()
+begin
+drop table if exists production_hockey.schedules;
+create table production_hockey.schedules
 select *
-into production.dbo.schedules
-from schedules
-go
+from schedules;
+end
 

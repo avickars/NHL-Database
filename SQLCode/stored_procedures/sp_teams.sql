@@ -1,5 +1,7 @@
-create procedure teams_view as
-drop table production.dbo.teams_view
+create procedure sp_teams_view()
+begin
+drop table if exists production_hockey.teams_view;
+create table production_hockey.teams_view as
 select t.teamID as 'Team ID',
        t.locationName as 'Team Location Name',
        t.teamName as 'Team Name',
@@ -9,7 +11,6 @@ select t.teamID as 'Team ID',
        tv.timeZone as 'Venue Time Zone',
        f.firstSeasonID as 'First Season',
        da.divisionID as 'Division ID'
-into production.dbo.teams_view
 from teams t
 inner join
     (select teamID
@@ -31,5 +32,5 @@ inner join
     from team_plays_in_venue) r where r.rowNum = 1) as tv
 on t.teamID = tv.teamID
 inner join franchises f on f.franchiseID = t.franchiseID;
-go
+end
 
