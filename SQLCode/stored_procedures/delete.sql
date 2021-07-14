@@ -1,7 +1,3 @@
-CREATE procedure sp_skater_game_data_view()
-begin
-drop table if exists production_hockey.game_sheet_skaters_view;
-create table production_hockey.game_sheet_skaters_view as
 select bs.gameID,
        bs.teamID,
        bs.playerID,
@@ -117,5 +113,17 @@ left join
          group by playerID, teamID, gameID, gameType
      ) playerInfo on bs.gameID =  playerInfo.gameID and
                      bs.teamID = playerInfo.teamID and
-                     bs.playerID = playerInfo.playerID;
-end
+                     bs.playerID = playerInfo.playerID
+
+
+                     select * from live_feed_temp
+
+select * from box_scores_temp
+
+
+
+
+
+
+
+

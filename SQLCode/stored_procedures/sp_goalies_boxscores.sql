@@ -1,5 +1,7 @@
-CREATE procedure goalies_boxscores as
-drop table production.dbo.goalies_boxscores
+CREATE procedure goalieBoxscores_view()
+begin
+drop table if exists production_hockey.goalies_boxscores;
+create table production_hockey.goalies_boxscores as
 select seasonID,
        gameID,
        teamID,
@@ -14,7 +16,6 @@ select seasonID,
        TOI,
        SO,
        ROW_NUMBER() over (partition by playerID, gameType order by gameDate desc) as 'gameNumber'
-into production.dbo.goalies_boxscores
 from (
          select COALESCE(GOALS_SHOTS_WINSLOSSES.seasonID, TOI.seasonID, -1)   as 'seasonID',
                 COALESCE(GOALS_SHOTS_WINSLOSSES.gameID, TOI.gameID, -1)       as 'gameID',
@@ -28,7 +29,7 @@ from (
                 GOALS_SHOTS_WINSLOSSES.L,                                               -- losses
                 GOALS_SHOTS_WINSLOSSES.T,                                               -- ties
                 TOI.timeOnIce                                                 as 'TOI', -- time on ice
-                IIF(GOALS_SHOTS_WINSLOSSES.G = 0, 1, 0)                       as 'SO',  -- shutouts
+                IF(GOALS_SHOTS_WINSLOSSES.G = 0, 1, 0)                       as 'SO',  -- shutouts
                 COALESCE(GOALS_SHOTS_WINSLOSSES.gameDate, TOI.gameDate, NULL) as 'gameDate',
                 COALESCE(GOALS_SHOTS_WINSLOSSES.gameType, TOI.gameType, NULL) as 'gameType'
          from (
@@ -39,17 +40,17 @@ from (
                          GOALS_SHOTS.G,
                          GOALS_SHOTS.S,
                          case
-                             when winsLosses.winner = GOALS_SHOTS.teamID and ISNULL(winsLosses.winner, -1) <> -1
+                             when winsLosses.winner = GOALS_SHOTS.teamID and ISNULL(winsLosses.winner) <> 1
                                  then 'W'
                              else NULL
                              end                                                   as 'W',
                          case
-                             when winsLosses.winner <> GOALS_SHOTS.teamID and ISNULL(winsLosses.winner, -1) <> -1
+                             when winsLosses.winner <> GOALS_SHOTS.teamID and ISNULL(winsLosses.winner) <> 1
                                  then 'L'
                              else NULL
                              end                                                   as 'L',
                          case
-                             when ISNULL(winsLosses.winner, -1) = -1 then 'T'
+                             when ISNULL(winsLosses.winner) = 1 then 'T'
                              else NULL
                              end                                                   as 'T',
                          COALESCE(GOALS_SHOTS.gameDate, winsLosses.gameDate, NULL) as 'gameDate',
@@ -65,36 +66,11 @@ from (
                                   COALESCE(GOALS.gameType, SHOTS.gameType, NULL) as 'gameType'
                            from (
                                     -- Number of Goals on a goalie by team, player, and game
-                                    select s.seasonID,
-                                           lf.gameID,
-                                           IIF(lf.teamID = s.homeTeamID, s.awayTeamID, s.homeTeamID) as 'teamID',
-                                           lf.playerID,
-                                           count(*)                                                  as 'numGoals',
-                                           s.gameDate,
-                                           s.gameType
-                                    from live_feed lf
-                                             inner join schedules s on lf.gameID = s.gameID
-                                    where eventTypeID = 'GOAL'
-                                      and playerType = 'GOALIE'
-                                    group by lf.teamID, lf.playerID, lf.gameID, s.seasonID, s.awayTeamID, s.homeTeamID,
-                                             s.gameDate, s.gameType
+
                                 ) GOALS
-                                    full outer join
+                                    full join
                                 (
-                                    -- Number of shots faced by a goalie by team, player, and game
-                                    select s.seasonID,
-                                           lf.gameID,
-                                           IIF(lf.teamID = s.homeTeamID, s.awayTeamID, s.homeTeamID) as 'teamID',
-                                           lf.playerID,
-                                           count(*)                                                  as 'numShots',
-                                           s.gameDate,
-                                           s.gameType
-                                    from live_feed lf
-                                             inner join schedules s on lf.gameID = s.gameID
-                                    where eventTypeID = 'SHOT'
-                                      and playerType = 'GOALIE'
-                                    group by lf.teamID, lf.playerID, lf.gameID, s.seasonID, s.homeTeamID, s.awayTeamID,
-                                             s.gameDate, s.gameType
+
                                 ) SHOTS on GOALS.seasonID = SHOTS.seasonID and
                                            GOALS.gameID = SHOTS.gameID and
                                            GOALS.teamID = SHOTS.teamID and
@@ -187,14 +163,5 @@ from (
                    where pp.primaryPositionCode = 'G'
                )
      ) inPBI
---      ) goalieBoxscores
--- inner join
---     (
-
---     ) goalies on goalieBoxscores.playerID = goalies.playerID
--- where goalies.playerID=8476945 order by goalieBoxscores.gameID
-
-
-select * from goalies_boxscores where playerID=8476945
-go
+end
 

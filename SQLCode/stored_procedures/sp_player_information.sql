@@ -1,9 +1,11 @@
-CREATE procedure player_information as
-drop table production.dbo.player_information
+CREATE procedure sp_player_information_view()
+begin
+drop table if exists production_hockey.player_information_view;
+create table production_hockey.player_information_view as
 select p.playerID,
 --        p.firstName,
-       IIF(LEFT(p.firstName, 1) = ' ', SUBSTRING(p.firstName, 2, 500), p.firstName) as 'firstName',
-       IIF(LEFT(p.lastName, 1) = ' ', SUBSTRING(p.lastName, 2, 500), p.lastName) as 'lastName',
+       IF(LEFT(p.firstName, 1) = ' ', SUBSTRING(p.firstName, 2, 500), p.firstName) as 'firstName',
+       IF(LEFT(p.lastName, 1) = ' ', SUBSTRING(p.lastName, 2, 500), p.lastName) as 'lastName',
 --        p.lastName,
        p.birthDate,
        p.birthCity,
@@ -11,7 +13,7 @@ select p.playerID,
        p.height,
        p.shootsCatches,
        rosterStatus.rosterStatus,
-       IIF(playerActive.active = 1, playsFor.teamName, NULL) as 'Current Team',
+       IF(playerActive.active = 1, playsFor.teamName, NULL) as 'Current Team',
        playerActive.active,
        headshots.headshot,
        captains.captain,
@@ -24,11 +26,10 @@ select p.playerID,
        draftPicks.pickInRound,
        draftPicks.round,
        draftPicks.draftYear,
-       concat(IIF(LEFT(p.firstName, 1) = ' ', SUBSTRING(p.firstName, 2, 500), p.firstName), ' ', IIF(LEFT(p.lastName, 1) = ' ', SUBSTRING(p.lastName, 2, 500), p.lastName) ) as 'Name',
+       concat(IF(LEFT(p.firstName, 1) = ' ', SUBSTRING(p.firstName, 2, 500), p.firstName), ' ', IF(LEFT(p.lastName, 1) = ' ', SUBSTRING(p.lastName, 2, 500), p.lastName) ) as 'Name',
        draftPicks.abbreviation as 'draftTeamAbbreviation',
        p.birthStateProvince,
        positions.primaryPositionCode
-into production.dbo.player_information
 from players p
 left join
     (
@@ -157,8 +158,8 @@ left join
         inner join teams t on t.teamID = draftPicks.teamID
 --         where ISNULL(nhlPlayerID, -1) <> -1
     ) draftPicks on (p.birthDate =  draftPicks.birthDate
-                    and IIF(LEFT(p.firstName, 1) = ' ', SUBSTRING(p.firstName, 2, 500), p.firstName) = draftPicks.firstName
-                    and IIF(LEFT(p.lastName, 1) = ' ', SUBSTRING(p.lastName, 2, 500), p.lastName) = draftPicks.lastName) or
+                    and IF(LEFT(p.firstName, 1) = ' ', SUBSTRING(p.firstName, 2, 500), p.firstName) = draftPicks.firstName
+                    and IF(LEFT(p.lastName, 1) = ' ', SUBSTRING(p.lastName, 2, 500), p.lastName) = draftPicks.lastName) or
                     p.playerID = draftPicks.nhlPlayerID
 --         p.playerID = draftPicks.nhlPlayerID
 left join
@@ -173,6 +174,6 @@ left join
                  from player_weighs
              ) ha
         where ha.rowNum = 1
-    ) weight on p.playerID = weight.playerID
-go
+    ) weight on p.playerID = weight.playerID;
+END
 

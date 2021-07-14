@@ -293,8 +293,9 @@ def get_position(connection, playerID, date, player):
 
     try:
         cursor.execute(query)
-        connection.rollback()
+        connection.commit()
     except Errors.IntegrityError:
+        connection.rollback()
         cursor.execute(f"insert into positions values ("
                        f"{primaryPositionCode},"
                        f"{primaryPositionName},"
