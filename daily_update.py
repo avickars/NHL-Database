@@ -20,5 +20,6 @@ def main():
     record_script_execution('get_new_players')
 
 
+
 if __name__ == '__main__':
     main()

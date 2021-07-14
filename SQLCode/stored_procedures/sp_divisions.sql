@@ -1,4 +1,4 @@
-CREATE procedure divisions_view()
+CREATE procedure sp_divisions_view()
 begin
 drop table if exists production_hockey.divisions_view;
 create table production_hockey.divisions_view as
@@ -17,4 +17,5 @@ inner join
 on d.divisionID = da.divisionID
 where rowNum = 1;
 end
+
 
