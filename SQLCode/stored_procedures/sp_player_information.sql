@@ -51,11 +51,10 @@ left join
               playsFor.teamID,
               t.teamName
         from (
-                select bs.playerID,
-                       bs.teamID,
-                       row_number() over (partition by playerID order by gameDate desc ) as 'rowNum'
-                from box_scores bs
-                         inner join schedules s on s.gameID = bs.gameID
+                select playerID,
+                        teamID,
+                        row_number() over (partition by playerID order by date desc ) as 'rowNum'
+                 from plays_for
             ) playsFor
                 inner join teams t on playsFor.teamID = t.teamID
         where rowNum = 1
