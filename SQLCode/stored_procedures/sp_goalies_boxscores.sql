@@ -1,167 +1,100 @@
-CREATE procedure goalieBoxscores_view()
+CREATE procedure sp_goalie_game_data_view()
 begin
 drop table if exists production_hockey.goalies_boxscores;
 create table production_hockey.goalies_boxscores as
-select seasonID,
-       gameID,
-       teamID,
-       playerID,
-       GP,
-       G,
-       SA,
-       S,
-       W,
-       L,
-       T,
-       TOI,
-       SO,
-       ROW_NUMBER() over (partition by playerID, gameType order by gameDate desc) as 'gameNumber'
-from (
-         select COALESCE(GOALS_SHOTS_WINSLOSSES.seasonID, TOI.seasonID, -1)   as 'seasonID',
-                COALESCE(GOALS_SHOTS_WINSLOSSES.gameID, TOI.gameID, -1)       as 'gameID',
-                COALESCE(GOALS_SHOTS_WINSLOSSES.teamID, TOI.teamID, -1)       as 'teamID',
-                COALESCE(GOALS_SHOTS_WINSLOSSES.playerID, TOI.playerID, -1)   as 'playerID',
-                1                                                             as 'GP',  -- games played
-                GOALS_SHOTS_WINSLOSSES.G,                                               -- goals
-                GOALS_SHOTS_WINSLOSSES.G + GOALS_SHOTS_WINSLOSSES.S           as 'SA',  -- shots against
-                GOALS_SHOTS_WINSLOSSES.S,                                               -- shots
-                GOALS_SHOTS_WINSLOSSES.W,                                               -- wins
-                GOALS_SHOTS_WINSLOSSES.L,                                               -- losses
-                GOALS_SHOTS_WINSLOSSES.T,                                               -- ties
-                TOI.timeOnIce                                                 as 'TOI', -- time on ice
-                IF(GOALS_SHOTS_WINSLOSSES.G = 0, 1, 0)                       as 'SO',  -- shutouts
-                COALESCE(GOALS_SHOTS_WINSLOSSES.gameDate, TOI.gameDate, NULL) as 'gameDate',
-                COALESCE(GOALS_SHOTS_WINSLOSSES.gameType, TOI.gameType, NULL) as 'gameType'
+select bs.*,
+       1 as 'GP',
+       goalsSaves.ESG, -- evenstrength goals
+       goalsSaves.PPG, -- powerplay goals
+       goalsSaves.SHG, -- short handed goals
+       goalsSaves.S, -- shots
+       IF((homeTeamGoals > awayTeamGoals and goalsSaves.teamID = outcome.homeTeamID) or (awayTeamGoals > homeTeamGoals and goalsSaves.teamID = outcome.awayTeamID), 1, 0)  as 'W', -- wins
+       IF((homeTeamGoals < awayTeamGoals and goalsSaves.teamID = outcome.homeTeamID) or (awayTeamGoals < homeTeamGoals and goalsSaves.teamID = outcome.awayTeamID), 1, 0)  as 'L', -- losses
+       IF(homeTeamGoals = awayTeamGoals, 1, 0)  as 'T', -- ties
+       IF((awayTeamGoals = 0 and goalsSaves.teamID = outcome.homeTeamID) or (homeTeamGoals = 0 and goalsSaves.teamID = outcome.awayTeamID), 1, 0) as 'SO' -- shutouts
+
+from
+     (
+         select gameID,
+               teamID,
+               bs.playerID,
+               jerseyNumber,
+               timeOnIce,
+               unknown,
+               scratched
+        from box_scores bs
+        inner join
+            (
+                select playerID,
+                       primaryPositionCode,
+                       max(date)
+                from plays_position
+                where primaryPositionCode = 'G' group by playerID
+            ) goalies on bs.playerID = goalies.playerID
+        where timeOnIce > '0:00'
+     ) bs
+left join
+     (
+-- goals and saves
+         select gameID,
+                playerID,
+                teamID,
+                SUM(IF(eventTypeID = 'GOAL' and playerType = 'GOALIE' and strength = 'EVEN', count, 0)) as 'ESG',
+                SUM(IF(eventTypeID = 'GOAL' and playerType = 'GOALIE' and strength = 'PPG', count, 0))  as 'PPG',
+                SUM(IF(eventTypeID = 'GOAL' and playerType = 'GOALIE' and strength = 'SHG', count, 0))  as 'SHG',
+                SUM(IF(eventTypeID = 'SHOT' and playerType = 'GOALIE', count, 0))                       as 'S'
          from (
-                  select COALESCE(GOALS_SHOTS.seasonID, winsLosses.seasonID)       as 'seasonID',
-                         COALESCE(GOALS_SHOTS.gameID, winsLosses.gameID)           as 'gameID',
-                         GOALS_SHOTS.teamID,
-                         GOALS_SHOTS.playerID,
-                         GOALS_SHOTS.G,
-                         GOALS_SHOTS.S,
-                         case
-                             when winsLosses.winner = GOALS_SHOTS.teamID and ISNULL(winsLosses.winner) <> 1
-                                 then 'W'
-                             else NULL
-                             end                                                   as 'W',
-                         case
-                             when winsLosses.winner <> GOALS_SHOTS.teamID and ISNULL(winsLosses.winner) <> 1
-                                 then 'L'
-                             else NULL
-                             end                                                   as 'L',
-                         case
-                             when ISNULL(winsLosses.winner) = 1 then 'T'
-                             else NULL
-                             end                                                   as 'T',
-                         COALESCE(GOALS_SHOTS.gameDate, winsLosses.gameDate, NULL) as 'gameDate',
-                         COALESCE(GOALS_SHOTS.gameType, winsLosses.gameType, NULL) as 'gameType'
+                  select lf.playerID,
+                         lf.teamID,
+                         lf.gameID,
+                         lf.eventTypeID,
+                         lf.strength,
+                         lf.playerType,
+                         count(*) as 'count'
                   from (
-                           select COALESCE(GOALS.seasonID, SHOTS.seasonID, -1)   as 'seasonID',
-                                  COALESCE(GOALS.gameID, SHOTS.gameID, -1)       as 'gameID',
-                                  COALESCE(GOALS.teamID, SHOTS.teamID, -1)       as 'teamID',
-                                  COALESCE(GOALS.playerID, SHOTS.playerID, -1)   as 'playerID',
-                                  ISNULL(GOALS.numGoals, 0)                      as 'G',
-                                  ISNULL(SHOTS.numShots, 0)                      as 'S',
-                                  COALESCE(GOALS.gameDate, SHOTS.gameDate, NULL) as 'gameDate',
-                                  COALESCE(GOALS.gameType, SHOTS.gameType, NULL) as 'gameType'
-                           from (
-                                    -- Number of Goals on a goalie by team, player, and game
-
-                                ) GOALS
-                                    full join
-                                (
-
-                                ) SHOTS on GOALS.seasonID = SHOTS.seasonID and
-                                           GOALS.gameID = SHOTS.gameID and
-                                           GOALS.teamID = SHOTS.teamID and
-                                           GOALS.playerID = SHOTS.playerID
-                       ) GOALS_SHOTS
-                           full outer join
-                       (
-                           -- Individual Game winning team
-                           select homeTeam.seasonID,
-                                  homeTeam.gameID,
-                                  homeTeam.homeTeamID,
-                                  ISNULL(homeTeam.homeTeamGoals, 0) as 'homeTeamGoals',
-                                  awayTeam.awayTeamID,
-                                  ISNULL(awayTeam.awayTeamGoals, 0) as 'awayTeamGoals',
-                                  IIF(ISNULL(homeTeam.homeTeamGoals, 0) > ISNULL(awayTeam.awayTeamGoals, 0),
-                                      homeTeam.homeTeamID,
-                                      IIF(ISNULL(homeTeam.homeTeamGoals, 0) < ISNULL(awayTeam.awayTeamGoals, 0),
-                                          awayTeam.awayTeamID,
-                                          NULL))                    as 'winner',
-                                  homeTeam.gameDate,
-                                  homeTeam.gameType
-                           from (
-                                    select s.seasonID,
-                                           s.gameID,
-                                           s.homeTeamID,
-                                           ISNULL(homeTeamGoals.numGoals, 0) as 'homeTeamGoals',
-                                           s.gameDate,
-                                           s.gameType
-                                    from schedules s
-                                             left join
-                                         (
-                                             select count(*) as 'numGoals',
-                                                    live_feed.gameID,
-                                                    live_feed.teamID
-                                             from live_feed
-                                             where eventTypeID = 'GOAL'
-                                               and eventSubID = 0
-                                             group by gameID, teamID
-                                         ) homeTeamGoals on s.gameID = homeTeamGoals.gameID and
-                                                            s.homeTeamID = homeTeamGoals.teamID
-                                ) homeTeam
-                                    inner join
-                                (
-                                    select s.seasonID,
-                                           s.gameID,
-                                           s.awayTeamID,
-                                           ISNULL(awayTeamGoals.numGoals, 0) as 'awayTeamGoals',
-                                           s.gameDate,
-                                           s.gameType
-                                    from schedules s
-                                             left join
-                                         (
-                                             select count(*) as 'numGoals',
-                                                    live_feed.gameID,
-                                                    live_feed.teamID
-                                             from live_feed
-                                             where eventTypeID = 'GOAL'
-                                               and eventSubID = 0
-                                             group by gameID, teamID
-                                         ) awayTeamGoals on s.gameID = awayTeamGoals.gameID and
-                                                            s.awayTeamID = awayTeamGoals.teamID
-                                ) awayTeam on homeTeam.seasonID = awayTeam.seasonID and
-                                              homeTeam.gameID = awayTeam.gameID
-                       ) winsLosses
-                       on GOALS_SHOTS.seasonID = winsLosses.seasonID and
-                          GOALS_SHOTS.gameID = winsLosses.gameID
-              ) GOALS_SHOTS_WINSLOSSES
-                  full outer join
-              (
-                  -- time on ice by season, game, team and player
-                  select s.gameID,
-                         s.seasonID,
-                         bs.teamID,
-                         bs.playerID,
-                         bs.timeOnIce,
-                         s.gameDate,
-                         s.gameType
-                  from box_scores bs
-                           inner join schedules s on bs.gameID = s.gameID
-                  where timeOnIce is not null
-              ) TOI on GOALS_SHOTS_WINSLOSSES.seasonID = TOI.seasonID and
-                       GOALS_SHOTS_WINSLOSSES.gameID = TOI.gameID and
-                       GOALS_SHOTS_WINSLOSSES.teamID = TOI.teamID and
-                       GOALS_SHOTS_WINSLOSSES.playerID = TOI.playerID
-         where GOALS_SHOTS_WINSLOSSES.playerID in
-               (
-                   select pp.playerID
-                   from players
-                            inner join plays_position pp on players.playerID = pp.playerID
-                   where pp.primaryPositionCode = 'G'
-               )
-     ) inPBI
+                           select lf.playerID,
+                                  lf.gameID,
+                                  lf.eventTypeID,
+                                  lf.strength,
+                                  lf.playerType,
+                                  IF(lf.playerType in ('Goalie'),
+                                     IF(lf.teamID = s.homeTeamID,
+                                        s.awayTeamID,
+                                        s.homeTeamID),
+                                     lf.teamID) "teamID",
+                                  s.gameType
+                           from live_feed lf
+                                    inner join schedules s on lf.gameID = s.gameID
+                       ) lf
+                  where (eventTypeID = 'GOAL' and playerType = 'Goalie')
+                     or (eventTypeID = 'SHOT' and playerType = 'Goalie')
+                  group by lf.playerID,
+                           lf.teamID,
+                           lf.gameID,
+                           lf.eventTypeID,
+                           lf.strength,
+                           lf.playerType
+              ) rawCounts
+         group by playerID, gameID, teamID
+     ) goalsSaves on bs.gameID = goalsSaves.gameID and
+                     bs.teamID = goalsSaves.teamID and
+                     bs.playerID = goalsSaves.playerID
+left join
+     (
+         select lf.gameID,
+               s.homeTeamID,
+               s.awayTeamID,
+               SUM(IF(lf.teamID = s.homeTeamID, numGoals, 0)) as 'homeTeamGoals',
+               SUM(IF(lf.teamID = s.awayTeamID, numGoals, 0)) as 'awayTeamGoals'
+        from (
+        select lf.gameID,
+               lf.teamID,
+               count(*) as 'numGoals'
+        from live_feed lf
+        where eventTypeID = 'GOAL' and eventSubID=0
+        group by lf.gameID, lf.teamID ) lf
+            inner join schedules s on lf.gameID = s.gameID
+        group by lf.gameID, s.homeTeamID, s.awayTeamID
+    ) outcome on  bs.gameID = outcome.gameID;
 end
 
