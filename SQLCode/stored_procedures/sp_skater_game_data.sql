@@ -32,7 +32,8 @@ select bs.gameID,
        IFNULL(playerInfo.penaltyMinutesTaken, 0) as 'PIMT',
        IFNULL(playerInfo.penaltiesTaken, 0) as 'PIT',
        IFNULL(playerInfo.penaltyMinutesDrawn, 0) as 'PIMD',
-       IFNULL(playerInfo.penaltiesDrawn, 0) as 'PID'
+       IFNULL(playerInfo.penaltiesDrawn, 0) as 'PID',
+       ROW_NUMBER() over (partition by bs.gameID,bs.playerID order by bs.gameID desc) AS 'gameNum'
 from box_scores bs
 left join
      (

@@ -33,3 +33,4 @@ def get_headshots():
             print("ERROR")
             print(query)
             return -1
+get_headshots()

@@ -3,13 +3,11 @@ begin
 drop table if exists production_hockey.player_information_view;
 create table production_hockey.player_information_view as
 select p.playerID,
---        p.firstName,
-       IF(LEFT(p.firstName, 1) = ' ', SUBSTRING(p.firstName, 2, 500), p.firstName) as 'firstName',
-       IF(LEFT(p.lastName, 1) = ' ', SUBSTRING(p.lastName, 2, 500), p.lastName) as 'lastName',
---        p.lastName,
+        REPLACE(p.firstName,"'", "") AS 'firstName',
+       REPLACE(p.lastName,"'", "") AS 'lastName',
        p.birthDate,
        p.birthCity,
-       p.birthCountry,
+       REPLACE(p.birthCountry,"'","") AS 'birthCountry',
        p.height,
        p.shootsCatches,
        rosterStatus.rosterStatus,
@@ -26,7 +24,7 @@ select p.playerID,
        draftPicks.pickInRound,
        draftPicks.round,
        draftPicks.draftYear,
-       concat(IF(LEFT(p.firstName, 1) = ' ', SUBSTRING(p.firstName, 2, 500), p.firstName), ' ', IF(LEFT(p.lastName, 1) = ' ', SUBSTRING(p.lastName, 2, 500), p.lastName) ) as 'Name',
+       concat(REPLACE(p.firstName,"'", ""), " ", REPLACE(p.lastName,"'", "")) as 'Name',
        draftPicks.abbreviation as 'draftTeamAbbreviation',
        p.birthStateProvince,
        positions.primaryPositionCode
@@ -157,8 +155,8 @@ left join
         inner join teams t on t.teamID = draftPicks.teamID
 --         where ISNULL(nhlPlayerID, -1) <> -1
     ) draftPicks on (p.birthDate =  draftPicks.birthDate
-                    and IF(LEFT(p.firstName, 1) = ' ', SUBSTRING(p.firstName, 2, 500), p.firstName) = draftPicks.firstName
-                    and IF(LEFT(p.lastName, 1) = ' ', SUBSTRING(p.lastName, 2, 500), p.lastName) = draftPicks.lastName) or
+                    and p.firstName = draftPicks.firstName
+                    and REPLACE(p.lastName,"'", "") = draftPicks.lastName) or
                     p.playerID = draftPicks.nhlPlayerID
 --         p.playerID = draftPicks.nhlPlayerID
 left join

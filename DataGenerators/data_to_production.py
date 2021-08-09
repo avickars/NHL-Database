@@ -41,7 +41,9 @@ def data_to_production():
     cursor.execute(query)
     connection.commit()
 
-
+    query = "call sp_weekly_update_script_execution_view();"
+    cursor.execute(query)
+    connection.commit()
 
     conn.close()
 
