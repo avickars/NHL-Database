@@ -33,7 +33,7 @@ select bs.gameID,
        IFNULL(playerInfo.penaltiesTaken, 0) as 'PIT',
        IFNULL(playerInfo.penaltyMinutesDrawn, 0) as 'PIMD',
        IFNULL(playerInfo.penaltiesDrawn, 0) as 'PID',
-       ROW_NUMBER() over (partition by bs.gameID,bs.playerID order by bs.gameID desc) AS 'gameNum'
+       ROW_NUMBER() over (partition by bs.playerID order by bs.gameID desc) AS 'gameNum'
 from box_scores bs
 left join
      (
@@ -118,5 +118,13 @@ left join
          group by playerID, teamID, gameID, gameType
      ) playerInfo on bs.gameID =  playerInfo.gameID and
                      bs.teamID = playerInfo.teamID and
-                     bs.playerID = playerInfo.playerID;
+                     bs.playerID = playerInfo.playerID
+inner join
+    (
+        select pp.playerID,
+               primaryPositionCode
+        from players
+            inner join plays_position pp on players.playerID = pp.playerID
+        where primaryPositionCode <> 'G'
+    ) skaters on bs.playerID = skaters.playerID;
 end

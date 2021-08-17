@@ -149,7 +149,7 @@ def get_daily_schedule():
     mostRecentRun = (mostRecentRun['date'].values[0] - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
     mostRecentRun = datetime.datetime.utcfromtimestamp(mostRecentRun)  # Adding one day on since we already ran it
     mostRecentRun = mostRecentRun.date()
-    while mostRecentRun < datetime.date.today():
+    while mostRecentRun <= datetime.date.today():
         print(mostRecentRun)
         url = requests.get(f"https://statsapi.web.nhl.com/api/v1/schedule?date={mostRecentRun}")
         url_data = url.json()

@@ -341,3 +341,45 @@ create table yearly_update_schedule (
     date date,
     primary key (date)
 );
+
+create table stage_hockey.gim_sequences (
+    gameID int,
+    goalDiff int,
+    manpowerDiff int,
+    periodNum int,
+    sequenceNum int,
+    eventNum int,
+    secondsElapsed int,
+    xCoord int,
+    yCoord int,
+    playerID int,
+    assist bit,
+    blocked_shot bit,
+    faceoff bit,
+    giveaway bit,
+    goal bit,
+    hit bit,
+    missed_shot bit,
+    penalty bit,
+    shot bit,
+    takeaway bit,
+    away bit,
+    home bit,
+    primary key (gameID,
+                sequenceNum,
+                eventNum)
+)
+
+create table stage_hockey.gim_values (
+    gameID int,
+    sequenceNum int,
+    eventNum int,
+    playerID int,
+    awayTeam bit,
+    homeTeam bit,
+    homeProbability float,
+    awayProbability float,
+    neitherProbability float,
+    primary key (gameID, sequenceNum, eventNum),
+    foreign key (gameID, sequenceNum, eventNum) references stage_hockey.gim_sequences (gameID,sequenceNum,eventNum)
+)
