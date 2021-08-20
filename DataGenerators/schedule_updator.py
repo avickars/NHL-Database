@@ -155,7 +155,6 @@ def get_daily_schedule():
         url_data = url.json()
 
         for date in url_data['dates']:
-            gameDate = f"\"{date['date']}\""
 
             for game in date['games']:
                 gameID = game['gamePk']
@@ -167,6 +166,10 @@ def get_daily_schedule():
                 awayTeamID = game['teams']['away']['team']['id']
 
                 season = game['season']
+
+                gameDate = f"\'{game['gameDate']}\'"
+                gameDate = gameDate.replace('T', ' ')
+                gameDate = gameDate.replace('Z', '')
 
                 # If we haven't inserted this game before, lets insert it
                 if len(games[games['gameID'] == gameID]) == 0:

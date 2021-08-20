@@ -145,13 +145,14 @@ def get_schedule():
         print(season[0])
 
         url = requests.get(f"https://statsapi.web.nhl.com/api/v1/schedule?season={season[0]}")
+        # url = requests.get(f"https://statsapi.web.nhl.com/api/v1/schedule?season=20202021")
         url_data = url.json()
         for date in url_data['dates']:
             # To delete this later, only keeping for now
             if not datetime.strptime(date['date'], '%Y-%m-%d').date() < datetime.today().date():
                 continue
 
-            gameDate = f"\'{date['date']}\'"
+            # gameDate = f"\'{date['date']}\'"
 
             for game in date['games']:
                 gameID = game['gamePk']
@@ -162,6 +163,10 @@ def get_schedule():
 
                 awayTeamID = game['teams']['away']['team']['id']
 
+                gameDate = f"\'{game['gameDate']}\'"
+                gameDate = gameDate.replace('T',' ')
+                gameDate = gameDate.replace('Z', '')
+
                 query = f"insert into schedules values (" \
                         f"{season[0]}," \
                         f"{gameID}," \
@@ -170,7 +175,6 @@ def get_schedule():
                         f"{homeTeamID}," \
                         f"{awayTeamID})"
 
-                cursor = connection.cursor()
                 # Trying to execute the query
                 try:
                     cursor.execute(query)
@@ -184,9 +188,9 @@ def get_schedule():
                     cursor.execute(query)
                     connection.commit()
                 except Errors.ProgrammingError:
+                    conn.close()
                     print(query)
                     return -1
-
     conn.close()
 
 

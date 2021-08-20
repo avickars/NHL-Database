@@ -143,6 +143,7 @@ def create_gim_model_input():
     # All values should be ints, a couple of them ended up as floats for some reason.
     sequenceData = sequenceData.astype(int)
 
+
     # Opening new connection to dump the new data
     conn = DatabaseConnection.sql_connection(creds.server, 'stage_hockey', creds.user, creds.password)
     connection = conn.open()

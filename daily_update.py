@@ -6,6 +6,7 @@ from DataGenerators.boxscore_generator import get_boxscore
 from DataGenerators.data_to_production import data_to_production
 from ETL.etl_sequences import create_gim_model_input
 from ETL.etl_gim_value import create_gim_values
+from ETL.etl_predicting_wins import predict_wins
 
 
 def main():
@@ -27,9 +28,12 @@ def main():
     # if create_gim_model_input() == -1:
     #     return -1
     # record_script_execution('create_gim_model_input')
-    if create_gim_values() == -1:
-        return -1
+    # if create_gim_values() == -1:
+    #     return -1
     # record_script_execution('create_gim_values')
+    if predict_wins() == -1:
+        return -1
+    # record_script_execution('create_predicting_win_model_input')
 
 
 

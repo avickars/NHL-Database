@@ -104,6 +104,7 @@ create table schedules(
     gameDate date not null ,
     homeTeamID int not null ,
     awayTeamID int not null ,
+    gameDateTime datetime not null ,
     primary key (gameID),
 	foreign key (seasonID) references seasons(seasonID),
     foreign key (homeTeamID) references teams (teamID),
@@ -368,18 +369,30 @@ create table stage_hockey.gim_sequences (
     primary key (gameID,
                 sequenceNum,
                 eventNum)
-)
+);
 
 create table stage_hockey.gim_values (
     gameID int,
     sequenceNum int,
     eventNum int,
     playerID int,
-    awayTeam bit,
-    homeTeam bit,
+    awayTeam smallint,
+    homeTeam smallint,
     homeProbability float,
     awayProbability float,
     neitherProbability float,
     primary key (gameID, sequenceNum, eventNum),
     foreign key (gameID, sequenceNum, eventNum) references stage_hockey.gim_sequences (gameID,sequenceNum,eventNum)
+)
+
+create table stage_hockey.average_gim_values_by_player (
+    seasonID int ,
+    gameID int ,
+    gameType varchar(20) not null ,  -- this has to be a varchar(20) because the are a couple types that are multiple letters
+    teamID int,
+    playerID int,
+    gim float,
+    gameNumber int,
+    gimTotal float,
+    gimMean float
 )

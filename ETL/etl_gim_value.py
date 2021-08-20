@@ -38,7 +38,6 @@ def create_gim_values():
     sequenceData = pd.read_sql_query(f"""
                                             select gim_sequences.*
                                             from stage_hockey.gim_sequences inner join hockey.schedules on gim_sequences.gameID = schedules.gameID where gameDate >= '{mostRecentRun}'
-                                            and gameType = 'R'
                                      """, connection)
 
     # sequenceData = pd.read_sql_query(f"""
@@ -50,7 +49,6 @@ def create_gim_values():
     connection.close()
     if len(sequenceData) == 0:
         return 0
-
 
     colsTransformed = ['goalDiff',
                        'manpowerDiff',
@@ -148,9 +146,6 @@ def create_gim_values():
         gameData = sequenceDataComplete[sequenceDataComplete['gameID'] == gameID]
         for sequenceNum in gameData['sequenceNum'].unique():
             modelInput = gameDataGPU[gameDataGPU[:, :, 1][:, 0] == sequenceNum, :, :]
-            print(modelInput.shape)
-            if modelInput[-1, 0, 1].item() == 814013:
-                print(modelInput[-1, 0, [0, 1, 2]])
             i = 0
             while i < modelInput.shape[0]:
                 if i == 0:
@@ -166,9 +161,9 @@ def create_gim_values():
                 GIM.append([int(modelInput[i, 0, 0].item()),  # GameID
                             int(modelInput[i, 0, 1].item()),  # sequenceNumber
                             int(modelInput[i, 0, 2].item()),  # eventNumber
-                            modelInput[-1, 0, 21].item(),  # PlayerID
-                            modelInput[-1, 0, 19].item(),  # Away
-                            modelInput[-1, 0, 20].item(),  # Home
+                            modelInput[i, 0, 21].item(),  # PlayerID
+                            modelInput[i, 0, 19].item(),  # Away
+                            modelInput[i, 0, 20].item(),  # Home
                             gim_t[0, 0, 0].item(),  # Home Probability
                             gim_t[0, 0, 1].item(),  # Away Probability
                             gim_t[0, 0, 2].item()])  # Neither Probability
@@ -183,28 +178,28 @@ def create_gim_values():
                                          'homeProbability',
                                          'awayProbability',
                                          'neitherProbability'])
-    # results.to_csv('delete.csv')
 
     # results['value'] = np.where(results['awayTeam'] == 1, results['awayProbability'], results['homeProbability'])
 
-    # Opening new connection to dump the new data
-    conn = DatabaseConnection.sql_connection(creds.server, 'stage_hockey', creds.user, creds.password)
-    connection = conn.open()
-    cursor = connection.cursor()
-    for index, row in results.iterrows():
-        # if row['sequenceNum'] == 814013:
-        query = f"insert into stage_hockey.gim_values values ({row['gameID']}," \
-                f"{row['sequenceNum']}," \
-                f"{row['eventNum']}," \
-                f"{row['playerID']}," \
-                f"{row['awayTeam']}," \
-                f"{row['homeTeam']}," \
-                f"{row['homeProbability']}," \
-                f"{row['awayProbability']}," \
-                f"{row['neitherProbability']})"
-        cursor.execute(query)
-        connection.commit()
-    connection.close()
+    results.to_csv('results_allgames.csv')
+
+    # # Opening new connection to dump the new data
+    # conn = DatabaseConnection.sql_connection(creds.server, 'stage_hockey', creds.user, creds.password)
+    # connection = conn.open()
+    # cursor = connection.cursor()
+    # for index, row in results.iterrows():
+    #     query = f"insert into stage_hockey.gim_values values ({row['gameID']}," \
+    #             f"{row['sequenceNum']}," \
+    #             f"{row['eventNum']}," \
+    #             f"{row['playerID']}," \
+    #             f"{row['awayTeam']}," \
+    #             f"{row['homeTeam']}," \
+    #             f"{row['homeProbability']}," \
+    #             f"{row['awayProbability']}," \
+    #             f"{row['neitherProbability']})"
+    #     cursor.execute(query)
+    #     connection.commit()
+    # connection.close()
 
 
 class DQN(nn.Module):
@@ -240,7 +235,6 @@ class DQN(nn.Module):
         t = F.relu(self.hidden4(t))
         t = F.softmax(self.output(t), dim=2)
         return t
-
 
 
 def get_device():
