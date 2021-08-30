@@ -2,7 +2,11 @@ CREATE procedure sp_daily_update_script_execution_view()
 begin
 drop table if exists production_hockey.daily_update_script_execution;
 create table production_hockey.daily_update_script_execution as
-select *
+select date as 'dateOfExecution',
+    get_daily_schedule,
+       get_live_data,
+       get_boxscore,
+       get_new_players
 from daily_update_schedule
 left join
 (select dateOfExecution,
@@ -26,5 +30,6 @@ on daily_update_schedule.date = script_executions.dateOfExecution
 where date <= curdate()
 order by date desc;
 end;
+
 
 
