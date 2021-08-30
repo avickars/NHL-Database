@@ -35,7 +35,7 @@ def get_live_data():
         mostRecentRun = mostRecentRun.date()
 
     # Getting all the games we need to get the live data for (i.e. everything from our last run up to games played yesterday)
-    games = pd.read_sql_query(f"select gameID from schedules where gameDate >= '{mostRecentRun}' and gameDate <='{date.today()}'", connection)
+    games = pd.read_sql_query(f"select gameID from schedules where gameDate >= '{mostRecentRun}' and gameDate <'{date.today()}'", connection)
 
     for index, gameID in games.iterrows():
         print(gameID)

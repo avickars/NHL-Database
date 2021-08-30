@@ -97,6 +97,7 @@ create table seasons (
     primary key (seasonID)
 );
 
+
 create table schedules(
 	seasonID int not null,
     gameID int not null ,
@@ -383,16 +384,54 @@ create table stage_hockey.gim_values (
     neitherProbability float,
     primary key (gameID, sequenceNum, eventNum),
     foreign key (gameID, sequenceNum, eventNum) references stage_hockey.gim_sequences (gameID,sequenceNum,eventNum)
-)
+);
 
-create table stage_hockey.average_gim_values_by_player (
-    seasonID int ,
-    gameID int ,
-    gameType varchar(20) not null ,  -- this has to be a varchar(20) because the are a couple types that are multiple letters
+create table season_to_next_season_mapping(
+    seasonID int,
+    previousSeasonID int,
+    foreign key (seasonID) references seasons (seasonID),
+    foreign key (previousSeasonID) references seasons (seasonID),
+    primary key (seasonID, previousSeasonID)
+);
+
+insert into season_to_next_season_mapping
+values (20112012, 20102011),
+       (20122013, 20112012),
+       (20132014, 20122013),
+       (20142015, 20132014),
+       (20152016, 20142015),
+       (20162017, 20152016),
+       (20172018, 20162017),
+       (20182019, 20172018),
+       (20192020, 20182019),
+       (20202021, 20192020)
+
+create table stage_hockey.gim_values_consolidated (
+    seasonID int,
+    gameID int,
+    gameType char(1),
     teamID int,
     playerID int,
-    gim float,
+    gimForIndvGame float,
     gameNumber int,
-    gimTotal float,
-    gimMean float
-)
+    gimCumTotal float,
+    gimMean float,
+    gimMeanAdjusted float,
+    primary key (seasonID, gameID, playerID)
+);
+
+create table stage_hockey.gim_by_player_by_season (
+    seasonID int,
+    playerID int,
+    gimValueAdjusted float,
+    primary key (seasonID, playerID)
+);
+
+create table stage_hockey.gim_position_averages_per_season (
+    seasonID int,
+    primaryPositionCode char(1),
+    gimMean float,
+    primary key (seasonID, primaryPositionCode)
+);
+
+

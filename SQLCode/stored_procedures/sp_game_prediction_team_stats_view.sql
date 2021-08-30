@@ -23,6 +23,8 @@ drop table if exists stage_hockey.game_prediction_team_stats;
 
 create table stage_hockey.game_prediction_team_stats as
 select seasonID,
+    gameDate,
+    gameType,
    gameID,
    teamID,
    shotsForTotal/gameNumber as 'shotsForPerGame',
@@ -38,6 +40,8 @@ from
         select GAMES.seasonID,
                GAMES.gameID,
                GAMES.teamID,
+               GAMES.gameDate,
+               GAMES.gameType,
                ROW_NUMBER() over (partition by GAMES.seasonID, GAMES.teamID order by GAMES.gameID) as 'gameNumber',
                SUM(STATS_FOR.shots) over (partition by GAMES.seasonID, GAMES.teamID order by GAMES.gameID) 'shotsForTotal',
                SUM(STATS_FOR.goals) over (partition by GAMES.seasonID, GAMES.teamID order by GAMES.gameID) 'goalsForTotal',
@@ -47,7 +51,9 @@ from
         from (
                 select s.seasonID,
                        gameID,
-                       homeTeamID as 'teamID'
+                       homeTeamID as 'teamID',
+                       s.gameDate,
+                       s.gameType
                 from schedules s
                 where s.gameID >= 2020020001 and
                      seasonID>=20102011 and
@@ -55,7 +61,9 @@ from
                 union
                 select seasonID,
                        gameID,
-                       awayTeamID as 'teamID'
+                       awayTeamID as 'teamID',
+                       s.gameDate,
+                       s.gameType
                 from schedules s
                 where seasonID>=20102011
              ) GAMES

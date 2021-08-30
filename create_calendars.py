@@ -14,6 +14,7 @@ def create_daily_update_calendar(cursor):
         cursor.commit()
         start += datetime.timedelta(days=1)
 
+
 def create_weekly_update_calendar(cursor):
     start = datetime.date(2021, 6, 13)
     while start <= datetime.date(2022, 6, 13):
