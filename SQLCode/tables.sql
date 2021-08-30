@@ -97,6 +97,7 @@ create table seasons (
     primary key (seasonID)
 );
 
+
 create table schedules(
 	seasonID int not null,
     gameID int not null ,
@@ -104,6 +105,7 @@ create table schedules(
     gameDate date not null ,
     homeTeamID int not null ,
     awayTeamID int not null ,
+    gameDateTime datetime not null ,
     primary key (gameID),
 	foreign key (seasonID) references seasons(seasonID),
     foreign key (homeTeamID) references teams (teamID),
@@ -341,3 +343,95 @@ create table yearly_update_schedule (
     date date,
     primary key (date)
 );
+
+create table stage_hockey.gim_sequences (
+    gameID int,
+    goalDiff int,
+    manpowerDiff int,
+    periodNum int,
+    sequenceNum int,
+    eventNum int,
+    secondsElapsed int,
+    xCoord int,
+    yCoord int,
+    playerID int,
+    assist bit,
+    blocked_shot bit,
+    faceoff bit,
+    giveaway bit,
+    goal bit,
+    hit bit,
+    missed_shot bit,
+    penalty bit,
+    shot bit,
+    takeaway bit,
+    away bit,
+    home bit,
+    primary key (gameID,
+                sequenceNum,
+                eventNum)
+);
+
+create table stage_hockey.gim_values (
+    gameID int,
+    sequenceNum int,
+    eventNum int,
+    playerID int,
+    awayTeam smallint,
+    homeTeam smallint,
+    homeProbability float,
+    awayProbability float,
+    neitherProbability float,
+    primary key (gameID, sequenceNum, eventNum),
+    foreign key (gameID, sequenceNum, eventNum) references stage_hockey.gim_sequences (gameID,sequenceNum,eventNum)
+);
+
+create table season_to_next_season_mapping(
+    seasonID int,
+    previousSeasonID int,
+    foreign key (seasonID) references seasons (seasonID),
+    foreign key (previousSeasonID) references seasons (seasonID),
+    primary key (seasonID, previousSeasonID)
+);
+
+insert into season_to_next_season_mapping
+values (20112012, 20102011),
+       (20122013, 20112012),
+       (20132014, 20122013),
+       (20142015, 20132014),
+       (20152016, 20142015),
+       (20162017, 20152016),
+       (20172018, 20162017),
+       (20182019, 20172018),
+       (20192020, 20182019),
+       (20202021, 20192020)
+
+create table stage_hockey.gim_values_consolidated (
+    seasonID int,
+    gameID int,
+    gameType char(1),
+    teamID int,
+    playerID int,
+    gimForIndvGame float,
+    gameNumber int,
+    gimCumTotal float,
+    gimMean float,
+    gimMeanAdjusted float,
+    primary key (seasonID, gameID, playerID)
+);
+
+create table stage_hockey.gim_by_player_by_season (
+    seasonID int,
+    playerID int,
+    gimValueAdjusted float,
+    primary key (seasonID, playerID)
+);
+
+create table stage_hockey.gim_position_averages_per_season (
+    seasonID int,
+    primaryPositionCode char(1),
+    gimMean float,
+    primary key (seasonID, primaryPositionCode)
+);
+
+

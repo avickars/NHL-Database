@@ -7,7 +7,7 @@ import numpy as np
 import datetime
 from DataGenerators.players_generator import *
 from mysql.connector.errors import Error
-
+from datetime import date
 
 def get_boxscore():
     # Opening connection
@@ -34,7 +34,7 @@ def get_boxscore():
         mostRecentRun = mostRecentRun.date()
 
     # Getting all the games we need to get the live data for (i.e. everything from our last run up to games played yesterday)
-    games = pd.read_sql_query(f"select gameID from schedules where gameDate >= '{mostRecentRun}'", connection)
+    games = pd.read_sql_query(f"select gameID from schedules where gameDate >= '{mostRecentRun}' and gameDate <'{date.today()}'", connection)
 
     for index, gameID in games.iterrows():
         print(gameID)

@@ -11,8 +11,8 @@ select bs.*,
        IF((homeTeamGoals > awayTeamGoals and goalsSaves.teamID = outcome.homeTeamID) or (awayTeamGoals > homeTeamGoals and goalsSaves.teamID = outcome.awayTeamID), 1, 0)  as 'W', -- wins
        IF((homeTeamGoals < awayTeamGoals and goalsSaves.teamID = outcome.homeTeamID) or (awayTeamGoals < homeTeamGoals and goalsSaves.teamID = outcome.awayTeamID), 1, 0)  as 'L', -- losses
        IF(homeTeamGoals = awayTeamGoals, 1, 0)  as 'T', -- ties
-       IF((awayTeamGoals = 0 and goalsSaves.teamID = outcome.homeTeamID) or (homeTeamGoals = 0 and goalsSaves.teamID = outcome.awayTeamID), 1, 0) as 'SO' -- shutouts
-
+       IF((awayTeamGoals = 0 and goalsSaves.teamID = outcome.homeTeamID) or (homeTeamGoals = 0 and goalsSaves.teamID = outcome.awayTeamID), 1, 0) as 'SO', -- shutouts
+        ROW_NUMBER() over (partition by bs.playerID order by bs.gameID desc) AS 'gameNum'
 from
      (
          select gameID,

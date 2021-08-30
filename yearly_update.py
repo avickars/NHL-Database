@@ -8,36 +8,53 @@ from DataGenerators.prospects_generator import get_prospects
 from DataGenerators.drafts_generator import get_drafts, update_prospects
 from DataGenerators.trophy_generator import get_trophies
 from DataGenerators.trophy_winner_generator import get_trophy_winners
+from ETL.etl_yearly_gim_consolidation import gim_yearly_update
 
 
 def main():
+    if gim_yearly_update() == -1:
+        return -1
+    record_script_execution('gim_yearly_update')
+
     if get_conferences() == -1:
         return -1
     record_script_execution('get_conferences')
+
     if get_divisions() == -1:
         return -1
     record_script_execution('get_divisions')
+
     if get_franchises() == -1:
         return -1
     record_script_execution('get_franchises')
+
     if get_teams() == -1:
         return -1
     record_script_execution('get_teams')
+
     if get_seasons() == -1:
         return -1
     record_script_execution('get_seasons')
+
     if get_drafts() == -1:
         return -1
     record_script_execution('get_drafts')
+
     if update_prospects() == -1:
         return -1
     record_script_execution('update_prospects')
+
     if get_trophies() == -1:
         return -1
     record_script_execution('get_trophies')
+
     if get_trophy_winners() == -1:
         return -1
     record_script_execution('get_trophy_winners')
+
+
+
+
 
 
 if __name__ == '__main__':

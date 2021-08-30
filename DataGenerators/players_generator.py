@@ -61,7 +61,9 @@ def update_players():
     connection = conn.open()
 
     # Getting the current conferences
-    players = pd.read_sql_query("select playerID from (select playerID, active, ROW_NUMBER() over (partition by playerID order by date desc ) as 'rowNum' from player_active ) p where rowNum = 1 and active = TRUE", connection)
+    players = pd.read_sql_query(
+        "select playerID from (select playerID, active, ROW_NUMBER() over (partition by playerID order by date desc ) as 'rowNum' from player_active ) p where rowNum = 1 and active = TRUE",
+        connection)
 
     for index, playerID in players.iterrows():
         playerID = playerID.values[0]
@@ -177,6 +179,7 @@ def get_other_player_info(connection, playerID, date):
     get_alternate_captain(connection, playerID, date, player)
     get_number(connection, playerID, date, player)
     get_roster_status(connection, playerID, date, player)
+    get_headshots(connection, playerID)
 
 
 def get_roster_status(connection, playerID, date, player):
