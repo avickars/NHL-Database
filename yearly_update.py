@@ -9,9 +9,17 @@ from DataGenerators.drafts_generator import get_drafts, update_prospects
 from DataGenerators.trophy_generator import get_trophies
 from DataGenerators.trophy_winner_generator import get_trophy_winners
 from ETL.etl_yearly_gim_consolidation import gim_yearly_update
-
+from SQLCode import DatabaseConnection
+from SQLCode import DatabaseCredentials as DBC
+from DataGenerators.team_logo_generator import get_logos
 
 def main():
+    # Opening connection
+    creds = DBC.DataBaseCredentials()
+    conn = DatabaseConnection.sql_connection(creds.server, creds.database, creds.user, creds.password)
+    connection = conn.open()
+    cursor = connection.cursor()
+
     if gim_yearly_update() == -1:
         return -1
     record_script_execution('gim_yearly_update')
@@ -51,6 +59,21 @@ def main():
     if get_trophy_winners() == -1:
         return -1
     record_script_execution('get_trophy_winners')
+
+    query = "call sp_weekly_update_script_execution_view();"
+    cursor.execute(query)
+    connection.commit()
+    record_script_execution('sp_weekly_update_script_execution_view')
+
+    if get_logos() == -1:
+        return -1
+    record_script_execution('get_logos')
+
+
+
+    conn.close()
+
+
 
 
 

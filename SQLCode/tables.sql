@@ -434,4 +434,25 @@ create table stage_hockey.gim_position_averages_per_season (
     primary key (seasonID, primaryPositionCode)
 );
 
+create table stage_hockey.game_outcome_prediction (
+    gameID int,
+    homeTeamID int,
+    awayTeamID int,
+    prediction smallint,
+    primary key (gameID)
+);
+
+create table team_logos (
+    franchiseID int,
+    teamID int,
+    startSeason int,
+    endSeason int,
+    logoID int,
+    logoURL varchar(250),
+    background varchar(20),
+    primary key (franchiseID, teamID, logoID),
+    foreign key (teamID) references teams (teamID),
+    foreign key (franchiseID) references franchises (franchiseID)
+);
+
 
