@@ -13,14 +13,12 @@ from live_feed lf
    left join box_scores bs on lf.gameID = bs.gameID and lf.playerID = bs.playerID
 where
      seasonID>=20102011 and
-     gameType = 'R'  and
+     gameType in ('R','P')  and
      ((eventTypeID='GOAL' and playerType = 'Scorer') or (eventTypeID='SHOT' and playerType='Shooter'))
 group by s.gameID,
       lf.teamID;
 
 drop table if exists stage_hockey.game_prediction_team_stats;
-
-
 create table stage_hockey.game_prediction_team_stats as
 select seasonID,
     gameDate,
@@ -55,9 +53,8 @@ from
                        s.gameDate,
                        s.gameType
                 from schedules s
-                where s.gameID >= 2020020001 and
-                     seasonID>=20102011 and
-                     gameType = 'R'
+                where seasonID>=20102011 and
+                      gameType in ('R', 'P')
                 union
                 select seasonID,
                        gameID,
@@ -65,11 +62,12 @@ from
                        s.gameDate,
                        s.gameType
                 from schedules s
-                where seasonID>=20102011
+                where seasonID>=20102011 and
+                      gameType in ('R', 'P')
              ) GAMES
         inner join STATS STATS_FOR on (GAMES.gameID = STATS_FOR.gameID and GAMES.teamID = STATS_FOR.teamID)
         inner join STATS STATS_AGAINST on (GAMES.gameID = STATS_AGAINST.gameID and GAMES.teamID <> STATS_AGAINST.teamID)
         order by GAMES.gameID, GAMES.teamID
-) STATS;
+) STATS_2;
 
 end;
