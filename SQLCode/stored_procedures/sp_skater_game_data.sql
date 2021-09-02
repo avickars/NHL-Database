@@ -33,9 +33,9 @@ select bs.gameID,
        IFNULL(playerInfo.penaltiesTaken, 0) as 'PIT',
        IFNULL(playerInfo.penaltyMinutesDrawn, 0) as 'PIMD',
        IFNULL(playerInfo.penaltiesDrawn, 0) as 'PID',
-       ROW_NUMBER() over (partition by bs.playerID order by bs.gameID desc) AS 'gameNum',
-       GIM.gimMean as 'GIM',
-       GIM.gimMeanAdjusted as 'GIM Adjusted'
+       ROW_NUMBER() over (partition by bs.playerID order by bs.gameID desc) AS 'gameNum'
+#        GIM.gimMean as 'GIM',
+#        GIM.gimMeanAdjusted as 'GIM Adjusted'
 from box_scores bs
 left join
      (
@@ -129,8 +129,9 @@ inner join
             inner join plays_position pp on players.playerID = pp.playerID
         where primaryPositionCode <> 'G'
     ) skaters on bs.playerID = skaters.playerID
-left join stage_hockey.gim_values_consolidated GIM on bs.gameID = GIM.gameID and
-                                                      bs.playerID = GIM.playerID and
-                                                      bs.teamID = GIM.teamID;
+# left join stage_hockey.gim_values_consolidated GIM on bs.gameID = GIM.gameID and
+#                                                       bs.playerID = GIM.playerID and
+#                                                       bs.teamID = GIM.teamID
+;
 
 end

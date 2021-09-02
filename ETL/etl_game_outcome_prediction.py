@@ -36,6 +36,9 @@ def get_game_outcome_predictions():
     # Getting all the games we need to get the live data for (i.e. everything from our last run up to games played yesterday)
     minGameID = pd.read_sql_query(f"select min(gameID) from schedules where gameDate > '{mostRecentRun}'", connection).values[0][0]
 
+    if minGameID is None:
+        return 0
+
     games = pd.read_sql_query(f"select * from schedules where gameID >= {minGameID}", connection)
 
     for index, game in games.iterrows():
