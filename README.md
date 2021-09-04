@@ -27,8 +27,8 @@ However, this won't be completed in the very near future simply because the NHL 
 4. Execute create all tables and databases defined in "SQLCode/tables.sql".
 5. Created all stored procedures in "SQLCode/stored_procedures".
 6. Execute "yearly_update.py"
-7. Execute "daily_update.py"
-
+7. Execute "daily_update.py"  
+   * The first time this is executed, this code take well over a day to download all the data.  My recommendation to speed this up as model as possible is to adjust the functions that are called to write all the output into a csv file and then to dumpy the results into the corresponding table one at a time.  Note, be sure to follow the order set out in "daily_update.py".
 ## Detailed Description of Each File
 
 #### daily_update.py
