@@ -8,8 +8,17 @@ This repository contains all the python and MySQL code to construct an automated
 
 1. Configure a MySQL Server:
    * Create an initial database called "hockey"
-   * Alter the credentials in SQLCode/DatabaseCredentials.py
-2. Execute create all tables and databases defined in SQLCode/tables.sql.
-3. Created all stored procedures in SQLCode/stored_procedures.
-4. 
+   * Alter the credentials in "SQLCode/DatabaseCredentials.py"
+2. Configure a python environment.  You will need the following packages:
+   * Numpy
+   * Pandas
+   * Skikit-learn
+   * Pickle
+   * PyTorch
+   * MySQL-Connector
+   * All other packages are default python packages and should not need to be installed.
+4. Execute create all tables and databases defined in "SQLCode/tables.sql".
+5. Created all stored procedures in "SQLCode/stored_procedures".
+6. Execute "yearly_update.py"
+7. Execute "daily_update.py"
 
