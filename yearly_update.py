@@ -60,10 +60,10 @@ def main():
         return -1
     record_script_execution('get_trophy_winners')
 
-    query = "call sp_weekly_update_script_execution_view();"
-    cursor.execute(query)
-    connection.commit()
-    record_script_execution('sp_weekly_update_script_execution_view')
+    # query = "call sp_weekly_update_script_execution_view();"
+    # cursor.execute(query)
+    # connection.commit()
+    # record_script_execution('sp_weekly_update_script_execution_view')
 
     if get_logos() == -1:
         return -1
