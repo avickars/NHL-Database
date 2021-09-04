@@ -1,6 +1,13 @@
 # NHL-Database
 
-This repository contains all the python and MySQL code to construct an automated NHL Fantasy Database.
+This repository contains all the python and MySQL code to construct an automated NHL Fantasy Database.  All the code is geared to work off of the NHL's undocumented API.  For more information on the API please see: https://github.com/dword4/nhlapi.  To be succinct, this repository contains the code to construct an fully automated Fantasy Database.  It currently contains models to:
+    * Asses a players impact on goal scoring (Uses a variation of the deep reinforcement learning model developed by Oliver Schulte and Guiland Liu).
+    * Predicts the winner of a game.
+In the future, I will be implementing an agent to automate Draft Kings Daily NHL Fantasy Competitions.  This will include:
+  * Models to predict the number of goals, assists, hits, shots etc a player will score in a game.
+  * An optimzation model to optimzation player select in Draft Kings Fantasy Competitions.
+  * An agent to automate the entire process.
+However, this won't be completed in the very near future simply because the NHL is currently in its off season and thus Draft Kings has no competitions. My estimated time to completion for this is approximately end of Dec 2021.
 
 ## Configuring the DataBase and Automation
 
@@ -50,3 +57,100 @@ This python script executes the yearly functions required to keep the database u
   * Updates the trophy winners.
   * Updates the logos.
 
+#### weekly_update.py
+This python script executes the weekly functinos required to keep the database up to date.  This includes:
+  * Updating player attributes.
+  * Creating a new backup of the server.
+  * Uploading the new backup.
+  * Deleting the old backup.
+
+### Analysis/
+#### Papers
+This just contains some interesting and applicable papers.
+
+#### player-valuation-deep_rl.ipynb
+
+This jupyter notebook contains the development of the deep reinforcement learning model used to develop the GIM values that are used to determine a players impact on goal scoring.  This model and its content is a variation of the week done in "Deep Reinforcement Learning in Ice Hockey for Context-Aware Player Evaluation" by Oliver Schulte and Guiland Liu.
+
+####  player-valuation_mdp.ipynb
+
+This jupyter notebook contains the developement of a markov decision model used to develop the GIM values that are used to determine a players impact on goal scoring.  This model and its content is a variation of the week done in "A Markov Game Model for Valuing Player Actions in Ice Hockey" by Olver Schulte and Kurt Routley.
+
+#### predicting_wins.ipynb
+
+This jupyter notebook contains the development of the model used to determine the winner of a given game.
+
+### DataGenerators
+
+#### backup_generator.py
+This script generates the back up of the SQL Server.  
+
+NOTE: This script will be updated shortly to not use Google Drive.
+
+#### boxscore_generator.py
+
+This script pulls the boxscores for games.
+
+#### conference_generator.py
+
+This script pulls the conferences.
+
+#### create_calendars.py
+
+This script creates the schedule of the weekly and daily updates.
+
+#### data_to_production.py
+
+This script executes the store_procedures to move the data to the production database.
+
+#### divisions_generator.py
+
+This script pulls the divisions.
+
+#### drafts_generator.py
+
+This script pulls the drafts.
+
+#### franchise_generator.py
+
+This script pulls the franchises.
+
+#### get_time.py
+
+This script creates the current time in the required format.
+
+#### live_data_generator.py
+
+This script pulls the play-by-play data for games.
+
+#### players_generator.py
+
+This script pulls players and also contains all the functions to pull their attributes as well.
+
+#### schedule_updator.py
+
+This script pulls the schedule.
+
+#### script_execution.py
+
+This script contains the function used to recored the execution of scripts.
+
+#### seasons_generator.py
+
+This script pulls the seasons.
+
+#### team_logo_generator.py
+
+This script pulls the team logos.
+
+#### teams_generator.py
+
+This script pulls the teams.
+
+#### trohpy_generator.py
+
+This script pulls the trohpies.
+
+#### trophy_winner_generator.py
+
+This script pulls the trophy winners.
