@@ -51,7 +51,7 @@ def main():
     #     return -1
     # record_script_execution('create_predicting_win_model_input')
 
-    data_to_production()
+    # data_to_production()
 
 
 if __name__ == '__main__':

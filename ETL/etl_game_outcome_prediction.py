@@ -7,6 +7,7 @@ from DataGenerators.players_generator import get_player, get_other_player_info
 from DataGenerators.get_time import get_time
 from pickle import load
 import pickle
+import mysql.connector.errors as Errors
 
 
 def get_game_outcome_predictions():
@@ -34,16 +35,17 @@ def get_game_outcome_predictions():
         mostRecentRun = mostRecentRun.date()
 
     # Getting all the games we need to get the live data for (i.e. everything from our last run up to games played yesterday)
-    minGameID = pd.read_sql_query(f"select min(gameID) from schedules where gameDate > '{mostRecentRun}'", connection).values[0][0]
+    minGameID = pd.read_sql_query(f"select min(gameID) from schedules where gameDate >= '{mostRecentRun}'", connection).values[0][0]
 
     if minGameID is None:
         return 0
 
-    games = pd.read_sql_query(f"select * from schedules where gameID >= {minGameID}", connection)
+    games = pd.read_sql_query(f"select * from schedules where gameID >= {minGameID} and gameDate < \'{datetime.date.today()}\'", connection)
 
     for index, game in games.iterrows():
         # Getting players that are playing in the game
-        boxscores = pd.read_sql_query(f"select * from stage_hockey.boxscores where gameID = {game['gameID']}", connection)
+        boxscores = pd.read_sql_query(f"select teamID, playerID, scratched, gameID from box_scores where gameID = {game['gameID']} and timeOnIce is not null", connection)
+        # boxscores = pd.read_sql_query(f"select * from stage_hockey.boxscores where gameID = {game['gameID']}", connection)
 
         # Getting all players GIM values from their last game
         playerGIMS = []
@@ -65,8 +67,17 @@ def get_game_outcome_predictions():
             # If we have no previous data on the player (i.e. its their first NHL game)
             else:
                 # If this is their first nhl game, we won't have them in the system, must fetch their data (we need their position to get the positional average GIM)
-                get_player(connection, player['playerID'])
-                get_other_player_info(connection, player['playerID'], f"\'{get_time()}\'")
+
+                # Testing if they are in the system
+                cursor.execute(f"""
+                                                           select * from players where playerID = {player['playerID']}
+                                                         """)
+                playerInfo = cursor.fetchall()
+
+                # They aren't in the system
+                if len(playerInfo) == 0:
+                    get_player(connection, player['playerID'])
+                    get_other_player_info(connection, player['playerID'], f"\'{get_time()}\'")
 
                 cursor.execute(f"""
                        select gimMean
@@ -82,9 +93,10 @@ def get_game_outcome_predictions():
                             """)
 
                 playerGIMS.append([player['teamID'], cursor.fetchall()[0][0]])
-            # break
+
         teamGIMValues = pd.DataFrame(playerGIMS, columns=['teamID', 'GIM_VALUE'])
         teamGIMValues = teamGIMValues.groupby(['teamID']).sum().reset_index()
+
 
         # Getting home team data
         gameTeamValues = [[]]

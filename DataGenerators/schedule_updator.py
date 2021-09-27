@@ -12,9 +12,7 @@ def get_current_seasonID():
     currentYear = int(datetime.datetime.now().strftime("%Y"))
     today = datetime.date.today()
 
-    jan1 = datetime.datetime.strptime('Jan 1', '%b %d').date().replace(year=today.year)
-
-    if today >= jan1:
+    if today.month >= 1 and today.month <= 8:
         return f"{currentYear - 1}{currentYear}"
     else:
         return f"{currentYear}{currentYear + 1}"
@@ -143,12 +141,15 @@ def get_daily_schedule():
 
     # Getting the games from the current season
     games = pd.read_sql_query(f"select gameID from schedules where seasonID={get_current_seasonID()}", connection)
+    print(get_current_seasonID())
 
     # Converting it from np.datetime64 to datetime
     # CITATION: https://stackoverflow.com/questions/13703720/converting-between-datetime-timestamp-and-datetime64
     mostRecentRun = (mostRecentRun['date'].values[0] - np.datetime64('1970-01-01T00:00:00Z')) / np.timedelta64(1, 's')
     mostRecentRun = datetime.datetime.utcfromtimestamp(mostRecentRun)  # Adding one day on since we already ran it
     mostRecentRun = mostRecentRun.date()
+
+    print(mostRecentRun)
     while mostRecentRun <= datetime.date.today():
         url = requests.get(f"https://statsapi.web.nhl.com/api/v1/schedule?date={mostRecentRun}")
         url_data = url.json()
@@ -184,7 +185,11 @@ def get_daily_schedule():
                     except Errors.IntegrityError:
                         get_teams(homeTeamID)
                         get_teams(awayTeamID)
-                        cursor.execute(query)
+                        try:
+                            cursor.execute(query)
+                        except:
+                            conn.close()
+                            return -1
                     connection.commit()
 
                 # Otherwise, it maybe got rescheduled, so lets update the schedule
@@ -201,10 +206,13 @@ def get_daily_schedule():
                         cursor.execute(query)
                         connection.rollback()
                     except Errors.IntegrityError:
-                        print(query)
                         get_teams(homeTeamID)
                         get_teams(awayTeamID)
-                        cursor.execute(query)
+                        try:
+                            cursor.execute(query)
+                        except:
+                            conn.close()
+                            return -1
                     connection.commit()
 
 
@@ -212,3 +220,4 @@ def get_daily_schedule():
         mostRecentRun = mostRecentRun + datetime.timedelta(days=1)
 
     conn.close()
+
