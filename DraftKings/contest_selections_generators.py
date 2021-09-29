@@ -15,11 +15,11 @@ def get_selections(cursor, connection):
     email = "aidanvickars@gmail.com"
     password = "Lgs3shrJkMFUdwf"
 
-    contestIDs = pd.read_sql_query(f"select contestID from draft_kings.contest_details where DATE(contestStartTime) = CURRENT_DATE()", connection)
+    # contestIDs = pd.read_sql_query(f"select contestID from draft_kings.contest_details where DATE(contestStartTime) = CURRENT_DATE()", connection)
 
     # for index, contestID in contestIDs.iterrows():
     #     print('hello')
-    contestID = 114422096
+    contestID = 114464494
 
     # Navigating to draftkings.com
     browser.get(url="https://www.draftkings.com/")
@@ -50,16 +50,40 @@ def get_selections(cursor, connection):
 
     time.sleep(2)
 
-    # Downloading the file
-    browser.find_element_by_xpath("/html/body/div[2]/div/div/div[3]/div/div/div[3]/div[1]/div[1]/div[1]/div/div[3]/div/a/span").click()
+    entries = browser.find_element_by_xpath("/html/body/div[2]/div/div/div[3]/div/div/div[3]/div[1]/div[1]/div[1]/div/div[2]/div[2]/div")
+
+    for entry in entries.find_elements_by_tag_name('div'):
+        print(entry.text)
+    # for entry in entries:
+    #     entry.click()
 
     time.sleep(2)
 
-    # Reading the file
-    zf = zipfile.ZipFile(f"C:/Users/Aidan/Downloads/contest-standings-{contestID}.zip")
-    df = pd.read_csv(zf.open(f"contest-standings-{contestID}.csv"))
-    # print(df)
+
+    # Downloading the file
+    # browser.find_element_by_xpath("/html/body/div[2]/div/div/div[3]/div/div/div[3]/div[1]/div[1]/div[1]/div/div[3]/div/a/span").click()
+    #
     # time.sleep(2)
+    #
+    # # Reading the file
+    # zf = zipfile.ZipFile(f"C:/Users/Aidan/Downloads/contest-standings-{contestID}.zip")
+    # df = pd.read_csv(zf.open(f"contest-standings-{contestID}.csv"))
+    # # print(df)
+    # # time.sleep(2)
+    # # os.remove(f"C:/Users/Aidan/Downloads/contest-standings-{contestID}.zip")
+    #
+    # if os.environ['COMPUTERNAME'] == 'DESKTOP-MSBHSVV':
+    #     zf = zipfile.ZipFile(f"C:/Users/Aidan/Downloads/contest-standings-{contestID}.zip")
+    #     selections = pd.read_csv(zf.open(f"contest-standings-{contestID}.csv"))
+    #     zf.close()
+    #
+    # # for index, selection in selections.iterrows():
+    # #
+    # #     cursor.execute(f"insert into draft_kings.contest_player_selections values ({selection['EntryId']}, "
+    # #                    f"\"{selection['EntryName']}\", "
+    # #                    f"\"{selection['Lineup']}\","
+    # #                    f"{contestID})")
+    #
     # os.remove(f"C:/Users/Aidan/Downloads/contest-standings-{contestID}.zip")
 
 
@@ -70,6 +94,7 @@ def main():
     connection = conn.open()
     cursor = connection.cursor()
     get_selections(cursor, connection)
+    connection.commit()
 
     conn.close()
 

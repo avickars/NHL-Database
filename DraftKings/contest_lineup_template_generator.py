@@ -84,8 +84,3 @@ def get_new_game_lineup_templates(cursor, url_data, gameTypeID):
             print(query)
             return -1
 
-        if oldID == id:
-            numIDInstance += 1
-        else:
-            oldID = id
-            numIDInstance += 1

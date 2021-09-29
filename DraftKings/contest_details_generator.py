@@ -5,6 +5,7 @@ import mysql.connector.errors as Errors
 def get_contest_details(cursor, contests):
     for contestID in contests:
         url_string = f"https://api.draftkings.com/contests/v1/contests/{contestID}?format=json"
+        # https: // api.draftkings.com / contests / v1 / contests / 114553969  # ?format=json
         url = requests.get(url_string)
         url_data = url.json()
         contestDetails = url_data['contestDetail']

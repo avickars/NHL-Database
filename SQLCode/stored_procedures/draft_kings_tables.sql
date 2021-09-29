@@ -74,3 +74,57 @@ create table contest_lineup_templates (
     numInstances int,
     primary key (gameTypeID, id, numInstances)
 );
+
+create table draft_stats (
+    id int,
+    abbr varchar(50),
+    name varchar(255),
+    stat_order int,
+    primary key (id)
+);
+
+create table draft_stats_players (
+    id int,
+    contestID int,
+    value varchar(20),
+    sortvalue varchar(20),
+    quality varchar(50),
+    playerID int,
+    foreign key (contestID) references contests (id)
+);
+
+create table draft_groups_players_api (
+    drafttableID int,
+    firstName varchar(255),
+    lastName varchar(255),
+    displayName varchar(255),
+    shortName varchar(255),
+    playerID int,
+    playerDkId int,
+    position varchar(20),
+    rosterSlotID int,
+    salary int,
+    contestID int,
+    foreign key (contestID) references contests (id)
+);
+
+create table draft_groups_players_webdriver (
+    position varchar(20),
+    name varchar(255),
+    id int,
+    rosterPosition  varchar(50),
+    salary int,
+    gameInfo varchar(255),
+    TeamAbbrev varchar(50),
+    AvgPointsPerGame decimal,
+    contestID int,
+    foreign key (contestID) references contests (id)
+);
+
+create table contest_player_selections (
+    entryID long,
+    entryName varchar(255),
+    lineup varchar(6535),
+    contestID int,
+    foreign key (contestID) references contests (id)
+);

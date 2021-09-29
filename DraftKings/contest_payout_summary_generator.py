@@ -2,7 +2,6 @@ import requests
 import mysql.connector.errors as Errors
 
 
-
 def get_payout_summary(cursor, contests):
     for contestID in contests:
         # url_string = f"https://api.draftkings.com/contests/v1/contests/114420180?format=json"
