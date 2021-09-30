@@ -74,6 +74,7 @@ def create_gim_model_sequences():
                                     order by gameID ,eventID, eventSubID asc
                                 """, connection)
 
+
     # Getting the last sequence number so we can keep incrementing the sequences
     sequenceNum = pd.read_sql_query("select max(sequenceNum) sequenceNum from stage_hockey.gim_sequences",  connection)
     if len(sequenceNum) == 0:
