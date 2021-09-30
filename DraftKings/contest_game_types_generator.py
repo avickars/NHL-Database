@@ -5,7 +5,7 @@ from DraftKings.contest_lineup_template_generator import get_new_game_lineup_tem
 
 
 def get_new_game_types(cursor, connection):
-    gameTypeIDs = pd.read_sql_query(f"select distinct gameTypeId from draft_kings.contest_details", connection)
+    gameTypeIDs = pd.read_sql_query(f"select distinct gameTypeId from draft_kings.contest_details where gameTypeID not in (select gameTypeID from draft_kings.contest_rules)", connection)
 
     for index, gameTypeID in gameTypeIDs.iterrows():
         url_string = f"https://api.draftkings.com/lineups/v1/gametypes/{int(gameTypeID)}/rules?format=json"

@@ -1,11 +1,15 @@
 import requests
 import mysql.connector.errors as Errors
-
+from dateutil import parser
+from DraftKings.timezone_conversion import timezone_converter
+from datetime import datetime
 
 def get_contest_details(cursor, contests):
+    # Used in the contestStartTime section, defining it up here so as not to get redefined
+    date_format = '%Y-%m-%d %H:%M:%S'
+
     for contestID in contests:
         url_string = f"https://api.draftkings.com/contests/v1/contests/{contestID}?format=json"
-        # https: // api.draftkings.com / contests / v1 / contests / 114553969  # ?format=json
         url = requests.get(url_string)
         url_data = url.json()
         contestDetails = url_data['contestDetail']
@@ -89,12 +93,14 @@ def get_contest_details(cursor, contests):
         except KeyError:
             contestStartTime = 'NULL'
         if contestStartTime is None:
-            contestStartTime = 'NULL'
-            query += f"{contestStartTime}"
+            # just continuing since it'll break code down the line otherwise if I don't know when the contest starts
+            continue
         else:
-            contestStartTime = contestStartTime.replace('T', ' ')
-            contestStartTime = contestStartTime.replace('Z', '')
-            query += f"\'{contestStartTime}\',"
+            contestStartTime = parser.parse(contestStartTime)
+            if timezone_converter(contestStartTime).date() == datetime.today().date():
+                query += f"\'{contestStartTime.strftime(date_format)}\',"
+            else:
+                continue
 
         try:
             gameTypeId = contestDetails['gameTypeId']

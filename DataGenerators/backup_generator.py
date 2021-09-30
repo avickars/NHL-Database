@@ -63,8 +63,15 @@ def delete_old_backup():
         print('Error Occured')
 
 
-def get_new_backup():
-    os.system('sudo mysqldump hockey > ~/Documents/mysql_backups/hockey_db_backup.sql')
+def get_new_backup_usb():
+    os.system("mysqldump -u root -proot -h 'localhost' hockey > /media/pi/ESD-USB/hockey.sql")
+    os.system("mysqldump -u root -proot -h 'localhost' draft_kings > /media/pi/ESD-USB/draft_kings.sql")
+    os.system("mysqldump -u root -proot -h 'localhost' stage_hockey > /media/pi/ESD-USB/stage_hockey.sql")
+
+def get_new_backup_ssd():
+    os.system("mysqldump -u root -proot -h 'localhost' hockey > /home/pi/Documents/mysql_backups/hockey.sql")
+    os.system("mysqldump -u root -proot -h 'localhost' draft_kings > /home/pi/Documents/mysql_backups/draft_kings.sql")
+    os.system("mysqldump -u root -proot -h 'localhost' stage_hockey > /home/pi/Documents/mysql_backups/stage_hockey.sql")
 
 
 def upload_backup():

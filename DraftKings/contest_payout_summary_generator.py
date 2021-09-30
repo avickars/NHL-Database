@@ -1,13 +1,33 @@
 import requests
 import mysql.connector.errors as Errors
+from DraftKings.timezone_conversion import timezone_converter
+from datetime import datetime
+from dateutil import parser
 
 
 def get_payout_summary(cursor, contests):
+    # Used in the contestStartTime section, defining it up here so as not to get redefined
+    date_format = '%Y-%M-%d %H:%M:%S'
+
     for contestID in contests:
-        # url_string = f"https://api.draftkings.com/contests/v1/contests/114420180?format=json"
         url_string = f"https://api.draftkings.com/contests/v1/contests/{contestID}?format=json"
         url = requests.get(url_string)
         url_data = url.json()
+
+        # Making sure to skip any contests that aren't today
+        try:
+            contestStartTime = url_data['contestDetail']['contestStartTime']
+        except KeyError:
+            contestStartTime = 'NULL'
+        if contestStartTime is None:
+            # just continuing since it'll break code down the line otherwise if I don't know when the contest starts
+            continue
+        else:
+            contestStartTime = parser.parse(contestStartTime)
+            if timezone_converter(contestStartTime).date() != datetime.today().date():
+                continue
+
+
         payoutSummary = url_data['contestDetail']['payoutSummary']
 
         for payout in payoutSummary:

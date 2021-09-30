@@ -1,13 +1,14 @@
 import pandas as pd
 import requests
 import mysql.connector.errors as Errors
+from datetime import datetime
 
+def get_player_info_api(cursor, connection):
+    contests = pd.read_sql_query(f"select contestID, draftGroupId from draft_kings.contest_details where contestStartTime >= CONVERT_TZ(\'{datetime.today().date()} 0:00:00\','right/US/Pacific','UTC') and contestStartTime <= CONVERT_TZ(\'{datetime.today().date()} 23:59:59\','right/US/Pacific','UTC')", connection)
 
-def get_player_info(cursor, connection):
-    contests = pd.read_sql_query(f"select contestID, draftGroupId from draft_kings.contest_details where DATE(contestStartTime) = CURRENT_DATE()", connection)
     for index, contest in contests.iterrows():
+        print(contest['contestID'])
         url_string = f"https://api.draftkings.com/draftgroups/v1/draftgroups/{contest['draftGroupId']}/draftables"
-        # url_string = f"https://api.draftkings.com/draftgroups/v1/draftgroups/{56902}/draftables"
         url = requests.get(url_string)
         url_data = url.json()
 
@@ -31,7 +32,7 @@ def get_player_info(cursor, connection):
             query += f"{draftableId},"
 
             try:
-                firstName = player['firstName'].replace("\'",' ')
+                firstName = player['firstName'].replace("\'", ' ')
             except KeyError:
                 firstName = 'NULL'
             if firstName is None:
@@ -112,6 +113,16 @@ def get_player_info(cursor, connection):
                 salary = 'NULL'
             query += f"{salary},"
 
+            try:
+                teamAbbreviation = player['teamAbbreviation']
+            except KeyError:
+                teamAbbreviation = 'NULL'
+            if teamAbbreviation is None:
+                teamAbbreviation = 'NULL'
+                teamAbbreviation += f"{teamAbbreviation},"
+            elif teamAbbreviation != 'NULL':
+                query += f"\'{teamAbbreviation}\',"
+
             for draftStatAttribute in player['draftStatAttributes']:
 
                 try:
@@ -146,8 +157,6 @@ def get_player_info(cursor, connection):
                 except:
                     print(f"insert into draft_kings.draft_stats_players values ({draftStatAttribute['id']}, {contest['contestID']}, {value}, {sortvalue}, {quality}, {playerId})")
                     return -1
-
-
 
             query += f"{contest['contestID']})"
 

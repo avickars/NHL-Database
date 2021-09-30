@@ -1,4 +1,4 @@
-create database draft_kings;
+# create database draft_kings;
 
 create table contests (
     IsStarred smallint,
@@ -104,6 +104,7 @@ create table draft_groups_players_api (
     position varchar(20),
     rosterSlotID int,
     salary int,
+    teamAbbreviation varchar(50),
     contestID int,
     foreign key (contestID) references contests (id)
 );
@@ -126,5 +127,21 @@ create table contest_player_selections (
     entryName varchar(255),
     lineup varchar(6535),
     contestID int,
+    foreign key (contestID) references contests (id)
+);
+
+create table points_legend (
+    playerType varchar(50),
+    event varchar(255),
+    points varchar(20),
+    contestID int,
+    primary key (contestID, event, playerType),
+    foreign key (contestID) references contests (id)
+);
+
+create table lineup_requirements (
+    lineupRequirement varchar(6535),
+    contestID int,
+    primary key (contestID),
     foreign key (contestID) references contests (id)
 );

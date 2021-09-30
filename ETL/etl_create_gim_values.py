@@ -9,6 +9,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+# REMOVED CUDA TO MAKE IT WORK ON RASPBERRY PI, SEE LINE 221/222
+
 
 def create_gim_values():
     # Opening connection
@@ -214,8 +216,10 @@ class DQN(nn.Module):
 
     def forward(self, modelInput):
         hidden = (
-            torch.cuda.FloatTensor(self.numLSTMLayers, 1, self.numLSTMNodes).normal_().double(),
-            torch.cuda.FloatTensor(self.numLSTMLayers, 1, self.numLSTMNodes).normal_().double()
+            # torch.cuda.FloatTensor(self.numLSTMLayers, 1, self.numLSTMNodes).normal_().double(),
+            # torch.cuda.FloatTensor(self.numLSTMLayers, 1, self.numLSTMNodes).normal_().double()
+            torch.FloatTensor(self.numLSTMLayers, 1, self.numLSTMNodes).normal_().double(),
+            torch.FloatTensor(self.numLSTMLayers, 1, self.numLSTMNodes).normal_().double()
         )
         for sequence in modelInput:
             out, hidden = self.lstmLayer(sequence.view(1, 1, -1), hidden)
