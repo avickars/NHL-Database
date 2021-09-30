@@ -115,6 +115,7 @@ def get_player_info_webdriver(cursor, connection):
             # Finding players table
             # playersTable = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/div/table[1]/tbody')
             playersTable = browser.find_element_by_class_name('left-table')
+            playersTable = playersTable.find_element_by_tag_name('tbody')
         except execeptions.NoSuchElementException:
             connection.rollback()
             print("Failed: RULES & SCORING ****************************************")
@@ -130,6 +131,7 @@ def get_player_info_webdriver(cursor, connection):
         try:
             # goaliesTable = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/div/table[2]/tbody')
             goaliesTable = browser.find_element_by_class_name('left-table')
+            goaliesTable = goaliesTable.find_element_by_tag_name('tbody')
         except execeptions.NoSuchElementException:
             connection.rollback()
             print("skipped ****************************************")
