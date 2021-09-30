@@ -112,7 +112,9 @@ def get_player_info_webdriver(cursor, connection):
 
             time.sleep(2)
 
-            playersTable = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/div/table[1]/tbody')
+            # Finding players table
+            # playersTable = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/div/table[1]/tbody')
+            playersTable = browser.find_element_by_class_name('left-table')
         except execeptions.NoSuchElementException:
             connection.rollback()
             print("Failed: RULES & SCORING ****************************************")
@@ -126,7 +128,8 @@ def get_player_info_webdriver(cursor, connection):
             cursor.execute(query)
 
         try:
-            goaliesTable = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/div/table[2]/tbody')
+            # goaliesTable = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/div/table[2]/tbody')
+            goaliesTable = browser.find_element_by_class_name('left-table')
         except execeptions.NoSuchElementException:
             connection.rollback()
             print("skipped ****************************************")
@@ -139,7 +142,7 @@ def get_player_info_webdriver(cursor, connection):
             query += f"{contest['contestID']})"
             cursor.execute(query)
 
-        # Getting the "LineUIp Requirement"
+        # Getting the "LineUp Requirement"
         try:
             lineUpRequirement = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/p[7]').text
             if len(lineUpRequirement) == 0:
@@ -147,14 +150,14 @@ def get_player_info_webdriver(cursor, connection):
                     lineUpRequirement = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/p[8]').text
                 except execeptions.NoSuchElementException:
                     connection.rollback()
-                    print("skipped ****************************************")
+                    print("Failed LineUp Requirement 1 ****************************************")
                     continue
         except execeptions.NoSuchElementException:
             try:
                 lineUpRequirement = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/p[8]').text
             except execeptions.NoSuchElementException:
                 connection.rollback()
-                print("skipped ****************************************")
+                print("Failed LineUp Requirement 2 ****************************************")
                 continue
         cursor.execute(f"insert into draft_kings.lineup_requirements values (\"{lineUpRequirement}\",{contest['contestID']})")
         connection.commit()
