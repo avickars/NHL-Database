@@ -99,11 +99,14 @@ def get_player_info_webdriver(cursor, connection):
         # Now getting the scoring for events
         # Getting it here since its on the same page
         try:
-            # Clicking "Full Contest Details"
-            browser.find_element_by_xpath('//*[@id="dkjs-draft"]/div/div[1]/div[2]/div[1]/div/div/div/div/div/div[1]/span[1]/button/span').click()
+            # Clicking "Full Contest Details
+            browser.find_element_by_class_name('_2XCxvDE2uWbmtH2QTVQoSH').click()
+        except execeptions.NoSuchElementException:
+            connection.rollback()
+            print("Failed: Clicking Full Contest Details ****************************************")
 
-            time.sleep(2)
-
+        time.sleep(2)
+        try:
             # Clicking "RULES & SCORING" in the popup
             browser.find_element_by_xpath('//*[@id="modal-rules-tab"]').click()
 
@@ -112,7 +115,7 @@ def get_player_info_webdriver(cursor, connection):
             playersTable = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/div/table[1]/tbody')
         except execeptions.NoSuchElementException:
             connection.rollback()
-            print("skipped ****************************************")
+            print("Failed: RULES & SCORING ****************************************")
             continue
 
         for row in playersTable.find_elements_by_tag_name('tr'):
