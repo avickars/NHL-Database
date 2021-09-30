@@ -58,7 +58,7 @@ def main():
         conn.close()
         return -1
     connection.commit()
-    record_script_execution('get_player_info_webdriver')
+    # record_script_execution('get_player_info_webdriver')
 
     conn.close()
 
