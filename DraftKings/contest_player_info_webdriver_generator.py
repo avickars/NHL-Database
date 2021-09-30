@@ -12,10 +12,10 @@ import selenium.common.exceptions as execeptions
 def get_player_info_webdriver(cursor, connection):
     if socket.gethostname() == 'DESKTOP-MSBHSVV':
         PATH = "ChromeDrivers/chromedriver_windows.exe"
+        browser = webdriver.Chrome(PATH)
     else:
-        PATH = "ChromeDrivers/chromedriver_linux.exe"
+        browser = webdriver.Chrome()
 
-    browser = webdriver.Chrome(PATH)
     email = "aidanvickars@gmail.com"
     password = "Lgs3shrJkMFUdwf"
 
@@ -62,6 +62,7 @@ def get_player_info_webdriver(cursor, connection):
             # Downloading the file
             browser.find_element_by_xpath("/html/body/div[2]/div/div/div/div[1]/div[2]/div[2]/div/div/div[3]/div[1]/div/div[4]/ul[2]/li[3]/a").click()
         except execeptions.NoSuchElementException:
+            print("skipped ****************************************")
             continue
 
         time.sleep(2)
@@ -111,6 +112,7 @@ def get_player_info_webdriver(cursor, connection):
             playersTable = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/div/table[1]/tbody')
         except execeptions.NoSuchElementException:
             connection.rollback()
+            print("skipped ****************************************")
             continue
 
         for row in playersTable.find_elements_by_tag_name('tr'):
@@ -124,10 +126,11 @@ def get_player_info_webdriver(cursor, connection):
             goaliesTable = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/div/table[2]/tbody')
         except execeptions.NoSuchElementException:
             connection.rollback()
+            print("skipped ****************************************")
             continue
 
         for row in goaliesTable.find_elements_by_tag_name('tr'):
-            query = f"insert into draft_kings.points_legend values (\'player\',"
+            query = f"insert into draft_kings.points_legend values (\'goalie\',"
             for item in row.find_elements_by_tag_name('td'):
                 query += f"\'{item.text}\',"
             query += f"{contest['contestID']})"
@@ -136,9 +139,20 @@ def get_player_info_webdriver(cursor, connection):
         # Getting the "LineUIp Requirement"
         try:
             lineUpRequirement = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/p[7]').text
+            if len(lineUpRequirement) == 0:
+                try:
+                    lineUpRequirement = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/p[8]').text
+                except execeptions.NoSuchElementException:
+                    connection.rollback()
+                    print("skipped ****************************************")
+                    continue
         except execeptions.NoSuchElementException:
-            connection.rollback()
-            continue
+            try:
+                lineUpRequirement = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/p[8]').text
+            except execeptions.NoSuchElementException:
+                connection.rollback()
+                print("skipped ****************************************")
+                continue
         cursor.execute(f"insert into draft_kings.lineup_requirements values (\"{lineUpRequirement}\",{contest['contestID']})")
         connection.commit()
 

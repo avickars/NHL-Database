@@ -145,3 +145,9 @@ create table lineup_requirements (
     primary key (contestID),
     foreign key (contestID) references contests (id)
 );
+
+create table script_execution (
+    script varchar(255),
+    date datetime,
+    primary key (script, date)
+);
