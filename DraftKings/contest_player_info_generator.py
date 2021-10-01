@@ -3,8 +3,11 @@ import requests
 import mysql.connector.errors as Errors
 from datetime import datetime
 
+
 def get_player_info_api(cursor, connection):
-    contests = pd.read_sql_query(f"select contestID, draftGroupId from draft_kings.contest_details where contestStartTime >= CONVERT_TZ(\'{datetime.today().date()} 0:00:00\','right/US/Pacific','UTC') and contestStartTime <= CONVERT_TZ(\'{datetime.today().date()} 23:59:59\','right/US/Pacific','UTC')", connection)
+    contests = pd.read_sql_query(
+        f"select contestID, draftGroupId from draft_kings.contest_details where contestStartTime >= CONVERT_TZ(\'{datetime.today().date()} 0:00:00\','right/US/Pacific','UTC') and contestStartTime <= CONVERT_TZ(\'{datetime.today().date()} 23:59:59\','right/US/Pacific','UTC')",
+        connection)
 
     for index, contest in contests.iterrows():
         print(contest['contestID'])

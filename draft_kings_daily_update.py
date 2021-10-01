@@ -17,48 +17,48 @@ def main():
     connection = conn.open()
     cursor = connection.cursor()
 
-    # # Getting Contests
-    # contests = get_contests(cursor)
-    # if contests == -1:
-    #     conn.close()
-    #     return -1
-    # connection.commit()
-    # record_script_execution('get_contests')
-    #
-    # # Getting contest details
-    # if get_contest_details(cursor, contests) == -1:
-    #     conn.close()
-    #     return -1
-    # connection.commit()
-    # record_script_execution('get_contest_details')
-    #
-    # # Getting the payout summary of the contest
-    # if get_payout_summary(cursor, contests) == -1:
-    #     conn.close()
-    #     return -1
-    # connection.commit()
-    # record_script_execution('get_payout_summary')
-    #
-    # # Getting the game type (contest rules) for each contest its not already there
-    # if get_new_game_types(cursor, connection) == -1:
-    #     conn.close()
-    #     return -1
-    # connection.commit()
-    # record_script_execution('get_new_game_types')
-    #
-    # # Getting the player info from the API
-    # if get_player_info_api(cursor, connection) == -1:
-    #     conn.close()
-    #     return -1
-    # connection.commit()
-    # record_script_execution('get_player_info_api')
+    # Getting Contests
+    contests = get_contests(cursor)
+    if contests == -1:
+        conn.close()
+        return -1
+    connection.commit()
+    record_script_execution('get_contests')
+
+    # Getting contest details
+    if get_contest_details(cursor, contests) == -1:
+        conn.close()
+        return -1
+    connection.commit()
+    record_script_execution('get_contest_details')
+
+    # Getting the payout summary of the contest
+    if get_payout_summary(cursor, contests) == -1:
+        conn.close()
+        return -1
+    connection.commit()
+    record_script_execution('get_payout_summary')
+
+    # Getting the game type (contest rules) for each contest its not already there
+    if get_new_game_types(cursor, connection) == -1:
+        conn.close()
+        return -1
+    connection.commit()
+    record_script_execution('get_new_game_types')
+
+    # Getting the player info from the API
+    if get_player_info_api(cursor, connection) == -1:
+        conn.close()
+        return -1
+    connection.commit()
+    record_script_execution('get_player_info_api')
 
     # Getting the player info from the webdriver
     if get_player_info_webdriver(cursor, connection) == -1:
         conn.close()
         return -1
     connection.commit()
-    # record_script_execution('get_player_info_webdriver')
+    record_script_execution('get_player_info_webdriver')
 
     conn.close()
 

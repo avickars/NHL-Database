@@ -131,7 +131,7 @@ def create_gim_values():
 
     # Loading model
     network = DQN()
-    network.load_state_dict(torch.load('ETL/gim_model.pt'))
+    network.load_state_dict(torch.load('ETL/gim_model.pt', map_location=torch.device(get_device())))
     network.eval()
     network.to(get_device())
 

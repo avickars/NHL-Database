@@ -88,6 +88,7 @@ def get_player_info_webdriver(cursor, connection):
                                f"{player['AvgPointsPerGame']},"
                                f"{contest['contestID']})")
             except execeptions.NoSuchElementException:
+                # if this happens, its broken, and we are exiting
                 connection.rollback()
                 return -1
 
@@ -102,7 +103,7 @@ def get_player_info_webdriver(cursor, connection):
             # Clicking "Full Contest Details
             browser.find_element_by_class_name('_2XCxvDE2uWbmtH2QTVQoSH').click()
         except execeptions.NoSuchElementException:
-            connection.rollback()
+            # connection.rollback()
             print("Failed: Clicking Full Contest Details ****************************************")
 
         time.sleep(2)
@@ -116,33 +117,33 @@ def get_player_info_webdriver(cursor, connection):
             # playersTable = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/div/table[1]/tbody')
             playersTable = browser.find_element_by_class_name('left-table')
             playersTable = playersTable.find_element_by_tag_name('tbody')
-        except execeptions.NoSuchElementException:
-            connection.rollback()
-            print("Failed: RULES & SCORING ****************************************")
-            continue
 
-        for row in playersTable.find_elements_by_tag_name('tr'):
-            query = f"insert into draft_kings.points_legend values (\'player\',"
-            for item in row.find_elements_by_tag_name('td'):
-                query += f"\'{item.text}\',"
-            query += f"{contest['contestID']})"
-            cursor.execute(query)
+            for row in playersTable.find_elements_by_tag_name('tr'):
+                query = f"insert into draft_kings.points_legend values (\'player\',"
+                for item in row.find_elements_by_tag_name('td'):
+                    query += f"\'{item.text}\',"
+                query += f"{contest['contestID']})"
+                cursor.execute(query)
+        except execeptions.NoSuchElementException:
+            # connection.rollback()
+            print("Failed: RULES & SCORING - Players ****************************************")
+            # continue
 
         try:
             # goaliesTable = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/div/table[2]/tbody')
-            goaliesTable = browser.find_element_by_class_name('left-table')
+            goaliesTable = browser.find_element_by_class_name('right-table')
             goaliesTable = goaliesTable.find_element_by_tag_name('tbody')
-        except execeptions.NoSuchElementException:
-            connection.rollback()
-            print("skipped ****************************************")
-            continue
 
-        for row in goaliesTable.find_elements_by_tag_name('tr'):
-            query = f"insert into draft_kings.points_legend values (\'goalie\',"
-            for item in row.find_elements_by_tag_name('td'):
-                query += f"\'{item.text}\',"
-            query += f"{contest['contestID']})"
-            cursor.execute(query)
+            for row in goaliesTable.find_elements_by_tag_name('tr'):
+                query = f"insert into draft_kings.points_legend values (\'goalie\',"
+                for item in row.find_elements_by_tag_name('td'):
+                    query += f"\'{item.text}\',"
+                query += f"{contest['contestID']})"
+                cursor.execute(query)
+        except execeptions.NoSuchElementException:
+            # connection.rollback()
+            print("Failed: RULES & SCORING - Goalies ****************************************")
+            # continue
 
         # Getting the "LineUp Requirement"
         try:
@@ -151,16 +152,16 @@ def get_player_info_webdriver(cursor, connection):
                 try:
                     lineUpRequirement = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/p[8]').text
                 except execeptions.NoSuchElementException:
-                    connection.rollback()
+                    # connection.rollback()
                     print("Failed LineUp Requirement 1 ****************************************")
-                    continue
+                    # continue
         except execeptions.NoSuchElementException:
             try:
                 lineUpRequirement = browser.find_element_by_xpath('/html/body/div[6]/div/div[9]/div/div/div[3]/div[2]/div[1]/div/div[2]/div/p[8]').text
             except execeptions.NoSuchElementException:
-                connection.rollback()
+                # connection.rollback()
                 print("Failed LineUp Requirement 2 ****************************************")
-                continue
+                # continue
         cursor.execute(f"insert into draft_kings.lineup_requirements values (\"{lineUpRequirement}\",{contest['contestID']})")
         connection.commit()
 
