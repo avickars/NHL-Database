@@ -62,7 +62,7 @@ def get_player_info_webdriver(cursor, connection):
             # Downloading the file
             browser.find_element_by_xpath("/html/body/div[2]/div/div/div/div[1]/div[2]/div[2]/div/div/div[3]/div[1]/div/div[4]/ul[2]/li[3]/a").click()
         except execeptions.NoSuchElementException:
-            print("skipped ****************************************")
+            print("Couldn't download file, skipped ****************************************")
             continue
 
         time.sleep(2)
