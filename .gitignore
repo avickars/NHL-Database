@@ -1,3 +1,4 @@
 # Project exclude paths
 /venv/
 /Data/
+/DraftKings/DraftKingsCredentials.py
