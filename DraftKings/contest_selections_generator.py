@@ -42,6 +42,7 @@ def get_selections(cursor, connection, contestID, browser):
         try:
             zf = zipfile.ZipFile(f"C:/Users/Aidan/Downloads/contest-standings-{contestID}.zip")
             selections = pd.read_csv(zf.open(f"contest-standings-{contestID}.csv"))
+            print(selections)
             zf.close()
         except FileNotFoundError:
             with open(f"C:/Users/Aidan/Downloads/contest-standings-{contestID}.csv", "r") as file:
@@ -50,13 +51,15 @@ def get_selections(cursor, connection, contestID, browser):
     else:
         try:
             zf = zipfile.ZipFile(f"/home/pi/Downloads/contest-standings-{contestID}.zip")
-            selections = pd.read_csv(zf.open(f"contest-standings-{contestID}.csv"))
+            selections = pd.read_csv(zf.open(f"C:/Users/Aidan/Downloads/contest-standings-{contestID}.csv"))
             zf.close()
         except FileNotFoundError:
             with open(f"/home/pi/Downloads/contest-standings-{contestID}.csv", "r") as file:
                 selections = pd.read_csv(file)
                 file.close()
+    selections = selections[['EntryName', 'Lineup', 'EntryId']]
     selections = selections.dropna()
+    print(selections)
 
     for index, selection in selections.iterrows():
         cursor.execute(f"insert into draft_kings.contest_player_selections values ({selection['EntryId']}, "

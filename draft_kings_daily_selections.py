@@ -54,6 +54,7 @@ def main():
 
         # If the contest is currently happening
         if difference <= -60:
+            print('ContestID:', contestHeap[0][1])
             if browser is None:
                 if socket.gethostname() == 'DESKTOP-MSBHSVV':
                     PATH = "ChromeDrivers/chromedriver_windows.exe"
@@ -94,6 +95,7 @@ def main():
             nextContestTime = nextContestTime.replace(tzinfo=timezone('UTC'))
             print(f"Sleeping until: {nextContestTime.astimezone('US/Pacific').strftime('%Y-%m-%d %H-%M-%S')}")
             time.sleep(difference + 60)
+        # break
 
     if browser is not None:
         browser.close()
