@@ -13,6 +13,7 @@ import selenium.common.exceptions as execeptions
 import socket
 from selenium import webdriver
 from DraftKings.draft_kings_script_execution import record_script_execution
+from selenium.webdriver.chrome.options import Options
 
 
 def main():
@@ -42,6 +43,13 @@ def main():
     creds = DraftKingsCredentialsCredentials()
     browser = None
 
+    opt = Options()
+    opt.add_experimental_option("prefs", {"profile.default_content_setting_values.media_stream_mic": 1,
+                                          "profile.default_content_setting_values.media_stream_camera": 1,
+                                          "profile.default_content_setting_values.geolocation": 1,
+                                          "profile.default_content_setting_values.notifications": 1
+                                          })
+
     while len(contestHeap) > 0:
         # Getting the current time
         nowTime = datetime.now(timezone('UTC')).replace(tzinfo=None)
@@ -58,7 +66,7 @@ def main():
             if browser is None:
                 if socket.gethostname() == 'DESKTOP-MSBHSVV':
                     PATH = "ChromeDrivers/chromedriver_windows.exe"
-                    browser = webdriver.Chrome(PATH)
+                    browser = webdriver.Chrome(PATH, options=opt)
                 else:
                     browser = webdriver.Chrome()
 

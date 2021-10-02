@@ -59,7 +59,6 @@ def get_selections(cursor, connection, contestID, browser):
                 file.close()
     selections = selections[['EntryName', 'Lineup', 'EntryId']]
     selections = selections.dropna()
-    print(selections)
 
     for index, selection in selections.iterrows():
         cursor.execute(f"insert into draft_kings.contest_player_selections values ({selection['EntryId']}, "
