@@ -10,6 +10,7 @@ from DraftKings.DraftKingsCredentials import DraftKingsCredentialsCredentials
 import selenium.common.exceptions as execeptions
 import socket
 from selenium import webdriver
+from DraftKings.draft_kings_script_execution import record_script_execution
 
 
 def main():
@@ -95,6 +96,7 @@ def main():
         browser.close()
 
     conn.close()
+    record_script_execution('get_selections')
 
 
 if __name__ == '__main__':
