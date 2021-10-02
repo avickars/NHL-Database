@@ -10,7 +10,6 @@ import socket
 from DraftKings.DraftKingsCredentials import DraftKingsCredentialsCredentials
 
 
-
 def get_selections(cursor, connection, contestID, browser):
     # Navigating to contest information page
     try:
@@ -35,7 +34,7 @@ def get_selections(cursor, connection, contestID, browser):
         print('failed to find download link')
         return
 
-    time.sleep(3)
+    time.sleep(2)
 
     # Reading the file
     if socket.gethostname() == 'DESKTOP-MSBHSVV':
@@ -51,7 +50,7 @@ def get_selections(cursor, connection, contestID, browser):
     else:
         try:
             zf = zipfile.ZipFile(f"/home/pi/Downloads/contest-standings-{contestID}.zip")
-            selections = pd.read_csv(zf.open(f"C:/Users/Aidan/Downloads/contest-standings-{contestID}.csv"))
+            selections = pd.read_csv(zf.open(f"contest-standings-{contestID}.csv"))
             zf.close()
         except FileNotFoundError:
             with open(f"/home/pi/Downloads/contest-standings-{contestID}.csv", "r") as file:
@@ -77,6 +76,7 @@ def get_selections(cursor, connection, contestID, browser):
             os.remove(f"/home/pi/Downloads/contest-standings-{contestID}.zip")
         except FileNotFoundError:
             os.remove(f"/home/pi/Downloads/contest-standings-{contestID}.csv")
+
 
 def main():
     # Opening connection
