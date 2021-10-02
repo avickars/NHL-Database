@@ -35,7 +35,7 @@ def get_selections(cursor, connection, contestID, browser):
         print('failed to find download link')
         return
 
-    time.sleep(2)
+    time.sleep(3)
 
     # Reading the file
     if socket.gethostname() == 'DESKTOP-MSBHSVV':
