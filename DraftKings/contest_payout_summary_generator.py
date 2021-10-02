@@ -27,7 +27,6 @@ def get_payout_summary(cursor, contests):
             if timezone_converter(contestStartTime).date() != datetime.today().date():
                 continue
 
-
         payoutSummary = url_data['contestDetail']['payoutSummary']
 
         for payout in payoutSummary:

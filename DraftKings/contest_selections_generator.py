@@ -110,7 +110,7 @@ def main():
 
     time.sleep(2)
 
-    get_selections(cursor, connection, 114697699, browser)
+    get_selections(cursor, connection, 114698150, browser)
 
     connection.commit()
 

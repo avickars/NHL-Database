@@ -2,6 +2,8 @@ from SQLCode import DatabaseConnection
 from SQLCode import DatabaseCredentials as DBC
 import pandas as pd
 from datetime import datetime
+from pytz import timezone
+import pytz
 from DraftKings.contest_selections_generator import get_selections
 import heapq
 from pytz import timezone
@@ -88,8 +90,9 @@ def main():
             if browser is not None:
                 browser.close()
                 browser = None
-            print(contestHeap[0][1])
-            print(difference)
+            print('ContestID:', contestHeap[0][1])
+            nextContestTime = nextContestTime.replace(tzinfo=timezone('UTC'))
+            print(f"Sleeping until: {nextContestTime.astimezone('US/Pacific').strftime('%Y-%m-%d %H-%M-%S')}")
             time.sleep(difference + 60)
 
     if browser is not None:

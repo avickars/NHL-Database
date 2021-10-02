@@ -4,6 +4,7 @@ from dateutil import parser
 from DraftKings.timezone_conversion import timezone_converter
 from datetime import datetime
 
+
 def get_contest_details(cursor, contests):
     # Used in the contestStartTime section, defining it up here so as not to get redefined
     date_format = '%Y-%m-%d %H:%M:%S'
