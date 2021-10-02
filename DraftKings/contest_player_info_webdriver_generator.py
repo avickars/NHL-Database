@@ -7,6 +7,7 @@ import os
 from datetime import datetime
 import socket
 import selenium.common.exceptions as execeptions
+from DraftKings.DraftKingsCredentials import DraftKingsCredentialsCredentials
 
 
 def get_player_info_webdriver(cursor, connection):
@@ -16,8 +17,10 @@ def get_player_info_webdriver(cursor, connection):
     else:
         browser = webdriver.Chrome()
 
-    email = "aidanvickars@gmail.com"
-    password = "Lgs3shrJkMFUdwf"
+    creds = DraftKingsCredentialsCredentials()
+
+    email = creds.email
+    password = creds.password
 
     contests = pd.read_sql_query(
         f"select contestID, draftGroupId from draft_kings.contest_details where contestStartTime >= CONVERT_TZ(\'{datetime.today().date()} 0:00:00\','right/US/Pacific','UTC') and contestStartTime <= CONVERT_TZ(\'{datetime.today().date()} 23:59:59\','right/US/Pacific','UTC')",
