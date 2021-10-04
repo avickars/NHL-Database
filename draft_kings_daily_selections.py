@@ -43,13 +43,6 @@ def main():
     creds = DraftKingsCredentialsCredentials()
     browser = None
 
-    opt = Options()
-    opt.add_experimental_option("prefs", {"profile.default_content_setting_values.media_stream_mic": 1,
-                                          "profile.default_content_setting_values.media_stream_camera": 1,
-                                          "profile.default_content_setting_values.geolocation": 1,
-                                          "profile.default_content_setting_values.notifications": 1
-                                          })
-
     while len(contestHeap) > 0:
         # Getting the current time
         nowTime = datetime.now(timezone('UTC')).replace(tzinfo=None)
@@ -66,7 +59,7 @@ def main():
             if browser is None:
                 if socket.gethostname() == 'DESKTOP-MSBHSVV':
                     PATH = "ChromeDrivers/chromedriver_windows.exe"
-                    browser = webdriver.Chrome(PATH, options=opt)
+                    browser = webdriver.Chrome(PATH)
                 else:
                     browser = webdriver.Chrome()
 
@@ -88,6 +81,7 @@ def main():
                     return
 
                 time.sleep(2)
+
             contestTime, contestID = heapq.heappop(contestHeap)
 
             if get_selections(cursor, connection, contestID, browser) == -1:

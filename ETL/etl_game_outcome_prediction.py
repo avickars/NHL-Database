@@ -43,9 +43,9 @@ def get_game_outcome_predictions():
     games = pd.read_sql_query(f"select * from schedules where gameID >= {minGameID} and gameDate < \'{datetime.date.today()}\'", connection)
 
     for index, game in games.iterrows():
+        print(game['gameID'])
         # Getting players that are playing in the game
         boxscores = pd.read_sql_query(f"select teamID, playerID, scratched, gameID from box_scores where gameID = {game['gameID']} and timeOnIce is not null", connection)
-        # boxscores = pd.read_sql_query(f"select * from stage_hockey.boxscores where gameID = {game['gameID']}", connection)
 
         # Getting all players GIM values from their last game
         playerGIMS = []
@@ -91,12 +91,13 @@ def get_game_outcome_predictions():
                                                     order by  date desc
                                                     limit 1)
                             """)
-
-                playerGIMS.append([player['teamID'], cursor.fetchall()[0][0]])
-
+                try:
+                    playerGIMS.append([player['teamID'], cursor.fetchall()[0][0]])
+                except IndexError:
+                    # This is here as a found in 1 case, the player had a playeriD but no more info (i.e. no position), so the above query returned nothing and through an index error
+                    continue
         teamGIMValues = pd.DataFrame(playerGIMS, columns=['teamID', 'GIM_VALUE'])
         teamGIMValues = teamGIMValues.groupby(['teamID']).sum().reset_index()
-
 
         # Getting home team data
         gameTeamValues = [[]]
@@ -195,10 +196,6 @@ def get_game_outcome_predictions():
         preds = model.predict(scaledData)
         query = f"insert into stage_hockey.game_outcome_prediction values ({game['gameID']},{game['homeTeamID']},{game['awayTeamID']},{preds[0]})"
         cursor.execute(query)
-        connection.commit()
-
-
+    connection.commit()
 
     conn.close()
-
-

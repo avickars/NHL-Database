@@ -41,12 +41,15 @@ def get_selections(cursor, connection, contestID, browser):
         try:
             zf = zipfile.ZipFile(f"C:/Users/Aidan/Downloads/contest-standings-{contestID}.zip")
             selections = pd.read_csv(zf.open(f"contest-standings-{contestID}.csv"))
-            print(selections)
             zf.close()
         except FileNotFoundError:
             with open(f"C:/Users/Aidan/Downloads/contest-standings-{contestID}.csv", "r") as file:
-                selections = pd.read_csv(file)
-                file.close()
+                try:
+                    selections = pd.read_csv(file)
+                    file.close()
+                except FileNotFoundError:
+                    print("Could not download file")
+                    return
     else:
         try:
             zf = zipfile.ZipFile(f"/home/pi/Downloads/contest-standings-{contestID}.zip")
@@ -54,8 +57,12 @@ def get_selections(cursor, connection, contestID, browser):
             zf.close()
         except FileNotFoundError:
             with open(f"/home/pi/Downloads/contest-standings-{contestID}.csv", "r") as file:
-                selections = pd.read_csv(file)
-                file.close()
+                try:
+                    selections = pd.read_csv(file)
+                    file.close()
+                except FileNotFoundError:
+                    print("Could not download file")
+                    return
     selections = selections[['EntryName', 'Lineup', 'EntryId']]
     selections = selections.dropna()
 

@@ -45,7 +45,7 @@ def main():
 
     if get_game_outcome_predictions() == -1:
         return -1
-    record_script_execution('get_game_outcome_predictions')
+    # record_script_execution('get_game_outcome_predictions')
 
     # if predict_game_outcome() == -1:
     #     return -1
