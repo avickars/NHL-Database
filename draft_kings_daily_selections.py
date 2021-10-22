@@ -28,7 +28,8 @@ def main():
             from draft_kings.contest_details CD
             inner join draft_kings.contest_game_times cgt on CD.draftGroupId = cgt.draftGroupId
             where CD.contestStartTime >= CONVERT_TZ(\'{datetime.today().date()} 0:00:00\','right/US/Pacific','UTC') and 
-                    CD.contestStartTime <= CONVERT_TZ(\'{datetime.today().date()} 23:59:59\','right/US/Pacific','UTC')
+                    CD.contestStartTime <= CONVERT_TZ(\'{datetime.today().date()} 23:59:59\','right/US/Pacific','UTC')  and
+            CD.contestID not in (select distinct contestID from draft_kings.contest_player_selections)
             group by CD.contestID""",
         connection)
 

@@ -193,8 +193,14 @@ def get_contest_details(cursor, contests):
         try:
             cursor.execute(query)
         except Errors.DataError:
+            print("Data Error")
             print(query)
             return -1
         except Errors.ProgrammingError:
+            print('Programming Error')
             print(query)
             return -1
+        except Errors.IntegrityError:
+            print('Integrity Error')
+            print(query)
+            continue

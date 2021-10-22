@@ -21,9 +21,12 @@ def get_player_info_webdriver(cursor, connection):
 
     email = creds.email
     password = creds.password
-
     contests = pd.read_sql_query(
-        f"select contestID, draftGroupId from draft_kings.contest_details where contestStartTime >= CONVERT_TZ(\'{datetime.today().date()} 0:00:00\','right/US/Pacific','UTC') and contestStartTime <= CONVERT_TZ(\'{datetime.today().date()} 23:59:59\','right/US/Pacific','UTC')",
+        f"select contestID, draftGroupId "
+        f"from draft_kings.contest_details "
+        f"where contestStartTime >= CONVERT_TZ(\'{datetime.today().date()} 0:00:00\','right/US/Pacific','UTC') and "
+        f"contestStartTime <= CONVERT_TZ(\'{datetime.today().date()} 23:59:59\','right/US/Pacific','UTC') and "
+        f"contestID not in (select distinct contestID from draft_kings.draft_groups_players_webdriver)",
         connection)
 
     try:
@@ -94,6 +97,10 @@ def get_player_info_webdriver(cursor, connection):
                 # if this happens, its broken, and we are exiting
                 connection.rollback()
                 return -1
+            except KeyError:
+                # Happens when there is a weird contest, just gonna skip it
+                connection.rollback()
+                continue
 
         if socket.gethostname() == 'DESKTOP-MSBHSVV':
             os.remove("C:/Users/Aidan/Downloads/DKSalaries.csv")

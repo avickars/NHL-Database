@@ -194,6 +194,7 @@ def get_game_outcome_predictions():
         model = pickle.load(open('ETL/game_outcome_prediction_svm.sav', 'rb'))
 
         preds = model.predict(scaledData)
+
         query = f"insert into stage_hockey.game_outcome_prediction values ({game['gameID']},{game['homeTeamID']},{game['awayTeamID']},{preds[0]})"
         cursor.execute(query)
     connection.commit()
