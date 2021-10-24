@@ -11,8 +11,8 @@ from DraftKings.DraftKingsCredentials import DraftKingsCredentialsCredentials
 
 
 def get_player_info_webdriver(cursor, connection):
-    if socket.gethostname() == 'DESKTOP-MSBHSVV':
-        PATH = "ChromeDrivers/chromedriver_windows.exe"
+    if socket.gethostname() == 'DESKTOP-N4DVD4G':
+        PATH = "ChromeDrivers/chromedriver.exe"
         browser = webdriver.Chrome(PATH)
     else:
         browser = webdriver.Chrome()
@@ -73,7 +73,7 @@ def get_player_info_webdriver(cursor, connection):
 
         time.sleep(2)
 
-        if socket.gethostname() == 'DESKTOP-MSBHSVV':
+        if socket.gethostname() == 'DESKTOP-N4DVD4G':
             with open("C:/Users/Aidan/Downloads/DKSalaries.csv", "r") as file:
                 players = pd.read_csv(file)
                 file.close()
@@ -102,7 +102,7 @@ def get_player_info_webdriver(cursor, connection):
                 connection.rollback()
                 continue
 
-        if socket.gethostname() == 'DESKTOP-MSBHSVV':
+        if socket.gethostname() == 'DESKTOP-N4DVD4G':
             os.remove("C:/Users/Aidan/Downloads/DKSalaries.csv")
         else:
             os.remove("/home/pi/Downloads/DKSalaries.csv")

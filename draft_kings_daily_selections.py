@@ -58,8 +58,8 @@ def main():
         if difference <= -60:
             print('ContestID:', contestHeap[0][1])
             if browser is None:
-                if socket.gethostname() == 'DESKTOP-MSBHSVV':
-                    PATH = "ChromeDrivers/chromedriver_windows.exe"
+                if socket.gethostname() == 'DESKTOP-N4DVD4G':
+                    PATH = "ChromeDrivers/chromedriver.exe"
                     browser = webdriver.Chrome(PATH)
                 else:
                     browser = webdriver.Chrome()

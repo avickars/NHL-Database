@@ -37,7 +37,7 @@ def get_selections(cursor, connection, contestID, browser):
     time.sleep(2)
 
     # Reading the file
-    if socket.gethostname() == 'DESKTOP-MSBHSVV':
+    if socket.gethostname() == 'DESKTOP-N4DVD4G':
         try:
             zf = zipfile.ZipFile(f"C:/Users/Aidan/Downloads/contest-standings-{contestID}.zip")
             selections = pd.read_csv(zf.open(f"contest-standings-{contestID}.csv"))
@@ -72,7 +72,7 @@ def get_selections(cursor, connection, contestID, browser):
                        f"\"{selection['Lineup']}\","
                        f"{contestID})")
 
-    if socket.gethostname() == 'DESKTOP-MSBHSVV':
+    if socket.gethostname() == 'DESKTOP-N4DVD4G':
         try:
             os.remove(f"C:/Users/Aidan/Downloads/contest-standings-{contestID}.zip")
         except FileNotFoundError:
