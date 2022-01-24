@@ -2,7 +2,7 @@ import pandas as pd
 import requests
 
 
-def parse_goalies(data):
+def parse_goalies(playerID, gameID, data):
     try:
         stats = data['stats']['goalieStats']
     except KeyError:
@@ -89,6 +89,8 @@ def parse_goalies(data):
         powerPlaySavePercentage = None
 
     values = {
+        'playerID': playerID,
+        'gameID': gameID,
         'timeOnIce': timeOnIce,
         'assists': assists,
         'goals': goals,
@@ -109,7 +111,7 @@ def parse_goalies(data):
     return values
 
 
-def parse_players(data):
+def parse_players(playerID, gameID,data):
     try:
         stats = data['stats']['skaterStats']
     except KeyError:
@@ -216,6 +218,8 @@ def parse_players(data):
         shortHandedTimeOnIce = None
 
     values = {
+        'playerID': playerID,
+        'gameID': gameID,
         'timeOnIce': timeOnIce,
         'assists': assists,
         'goals': goals,
@@ -235,7 +239,7 @@ def parse_players(data):
         'plusMinus': plusMinus,
         'evenTimeOnIce': evenTimeOnIce,
         'powerPlayTimeOnIce': powerPlayTimeOnIce,
-        'shortHandedTimeOnIce': shortHandedTimeOnIce,
+        'shortHandedTimeOnIce': shortHandedTimeOnIce
     }
 
     return values
@@ -265,15 +269,13 @@ def main():
                 playerID = int(player[2:])
 
                 if playerID in goalies:
-                    values = parse_goalies(players[player])
+                    values = parse_goalies(playerID,values['gameID'], players[player])
 
                     goalies_data.append(values)
                 else:
-                    values = parse_players(players[player])
+                    values = parse_players(playerID, values['gameID'], players[player])
 
                     players_data.append(values)
-
-
 
     players_df = pd.DataFrame(players_data)
     goalies_df = pd.DataFrame(goalies_data)
