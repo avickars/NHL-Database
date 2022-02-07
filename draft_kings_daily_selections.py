@@ -59,10 +59,10 @@ def main():
             print('ContestID:', contestHeap[0][1])
             if browser is None:
                 if socket.gethostname() == 'DESKTOP-N4DVD4G':
-                    PATH = "ChromeDrivers/chromedriver.exe"
+                    PATH = "ChromeDrivers/chromedriver"
                     browser = webdriver.Chrome(PATH)
                 else:
-                    browser = webdriver.Chrome()
+                    browser = webdriver.Chrome("ChromeDrivers/chromedriver")
 
                 # Navigating to draftkings.com
                 browser.get(url="https://www.draftkings.com/")

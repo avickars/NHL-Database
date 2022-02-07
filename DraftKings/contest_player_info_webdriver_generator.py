@@ -12,10 +12,10 @@ from DraftKings.DraftKingsCredentials import DraftKingsCredentialsCredentials
 
 def get_player_info_webdriver(cursor, connection):
     if socket.gethostname() == 'DESKTOP-N4DVD4G':
-        PATH = "ChromeDrivers/chromedriver.exe"
+        PATH = "ChromeDrivers/chromedriver"
         browser = webdriver.Chrome(PATH)
     else:
-        browser = webdriver.Chrome()
+        browser = webdriver.Chrome("ChromeDrivers/chromedriver")
 
     creds = DraftKingsCredentialsCredentials()
 
