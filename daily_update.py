@@ -26,32 +26,32 @@ def main():
         return -1
     record_script_execution('get_new_players')
 
-    # ETLs
-    if create_gim_model_sequences() == -1:
-        return -1
-    record_script_execution('create_gim_model_sequences')
-
-    if create_gim_values() == -1:
-        return -1
-    record_script_execution('create_gim_values')
-
-    if get_new_consolidated_gims() == -1:
-        return -1
-    record_script_execution('get_new_consolidated_gims')
-
-    if execute_proc("sp_game_prediction_team_stats_view") == -1:
-        return -1
-    record_script_execution('sp_game_prediction_team_stats_view')
-
-    if get_game_outcome_predictions() == -1:
-        return -1
-    record_script_execution('get_game_outcome_predictions')
+    # # ETLs
+    # if create_gim_model_sequences() == -1:
+    #     return -1
+    # record_script_execution('create_gim_model_sequences')
+    #
+    # if create_gim_values() == -1:
+    #     return -1
+    # record_script_execution('create_gim_values')
+    #
+    # if get_new_consolidated_gims() == -1:
+    #     return -1
+    # record_script_execution('get_new_consolidated_gims')
+    #
+    # if execute_proc("sp_game_prediction_team_stats_view") == -1:
+    #     return -1
+    # record_script_execution('sp_game_prediction_team_stats_view')
+    #
+    # if get_game_outcome_predictions() == -1:
+    #     return -1
+    # record_script_execution('get_game_outcome_predictions')
 
     # if predict_game_outcome() == -1:
     #     return -1
     # record_script_execution('create_predicting_win_model_input')
 
-    data_to_production()
+    # data_to_production()
 
 
 if __name__ == '__main__':
